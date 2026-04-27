@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="BP Denetim"/>
+<meta name="theme-color" content="#1B3A6B"/>
+<title>Bizim Pazar – Şube Denetim</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:Georgia,serif;background:#f0f4f8;min-height:100vh;overscroll-behavior:none;}
+
+.header{background:#1B3A6B;color:white;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(27,58,107,.5);}
+.header-inner{display:flex;align-items:center;gap:12px;padding:12px 16px 6px;}
+.logo{background:#C0212B;color:white;font-weight:900;font-size:15px;border-radius:8px;padding:6px 10px;letter-spacing:1px;}
+.header-title{font-size:15px;font-weight:700;}
+.header-sub{font-size:11px;color:#93c5fd;}
+.progress-wrap{height:4px;background:#1e3a5f;margin:0 16px;}
+.progress-bar{height:100%;background:#E8A020;border-radius:99px;transition:width .3s;}
+.progress-text{text-align:right;font-size:11px;color:#93c5fd;padding:2px 16px 8px;}
+
+.nav-tabs{display:flex;background:#12285a;border-top:1px solid #1e3a5f;}
+.nav-tab{flex:1;padding:10px 4px;font-size:11px;font-weight:700;color:#93c5fd;text-align:center;cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:3px solid transparent;transition:all .2s;}
+.nav-tab.active{color:white;border-bottom-color:#E8A020;}
+
+.container{padding:12px 12px 80px;max-width:520px;margin:0 auto;}
+.card{background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e2e8f0;}
+.sec-title{font-weight:700;color:#1B3A6B;font-size:14px;margin-bottom:12px;}
+
+.field{margin-bottom:12px;}
+label.lbl{display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+select,input,textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:13px;color:#1e293b;background:#fafafa;font-family:inherit;appearance:none;}
+textarea{resize:vertical;min-height:60px;}
+
+.sec-hdr{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:none;cursor:pointer;padding:0;font-weight:700;color:#1B3A6B;font-size:14px;font-family:inherit;}
+.sec-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;}
+
+.item-row{border-bottom:1px solid #f1f5f9;padding-bottom:12px;margin-bottom:12px;}
+.item-text{font-size:13px;color:#334155;margin-bottom:8px;line-height:1.4;}
+.btn-group{display:flex;gap:6px;}
+.status-btn{flex:1;padding:8px 4px;border-radius:8px;font-size:11px;cursor:pointer;border:2px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-weight:500;font-family:inherit;transition:all .15s;text-align:center;}
+.status-btn.active-ok{background:#dcfce7;border-color:#16a34a;color:#16a34a;font-weight:700;}
+.status-btn.active-warn{background:#E8A020;border-color:#E8A020;color:#fff;font-weight:700;}
+.status-btn.active-fail{background:#fee2e2;border-color:#dc2626;color:#dc2626;font-weight:700;}
+
+.btn-primary{width:100%;padding:16px;background:#C0212B;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-secondary{width:100%;padding:14px;background:white;color:#1B3A6B;border:2px solid #1B3A6B;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;}
+.btn-gold{width:100%;padding:14px;background:#E8A020;color:#1B3A6B;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;}
+
+.score-big{font-size:52px;font-weight:800;text-align:center;}
+.score-label{font-size:20px;font-weight:700;text-align:center;margin-bottom:8px;}
+.score-meta{color:#64748b;font-size:13px;text-align:center;margin-bottom:12px;}
+.badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:4px;}
+.badge{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;}
+.note-box{margin-top:8px;padding:8px 10px;background:#f8fafc;border-radius:8px;font-size:12px;color:#475569;border-left:3px solid #E8A020;}
+.sig-block{text-align:center;padding:20px;border:2px dashed #e2e8f0;border-radius:12px;margin:12px 0;}
+
+.history-item{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #f1f5f9;cursor:pointer;}
+.history-item:last-child{border-bottom:none;}
+.history-score{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:white;flex-shrink:0;}
+.history-branch{font-weight:700;color:#1B3A6B;font-size:13px;}
+.history-meta{font-size:11px;color:#94a3b8;margin-top:2px;}
+.history-del{color:#dc2626;font-size:18px;padding:4px 8px;background:none;border:none;cursor:pointer;flex-shrink:0;}
+.empty-state{text-align:center;padding:40px 20px;color:#94a3b8;}
+.compare-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;}
+.compare-row:last-child{border-bottom:none;}
+.compare-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;color:white;}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1B3A6B;color:white;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.toast.show{display:block;}
+</style>
+
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast"></div>
+<script>
+const BRANCHES=["Adliye Şubesi","Adana Yolu Şubesi","Cengiz Topel Şubesi","Andırın Caddesi Şubesi","Osmaniye Yolu Şubesi"];
+const INSPECTORS=["Mehmet Konur","Rumeysa Karamut"];
+const SECTIONS=[
+  {id:"skt",icon:"📅",title:"SKT / FIFO Kontrolü",items:[
+    "Raflarda süresi dolmuş ürün yok",
+    "FIFO uygulaması yapılıyor",
+    "Tarihe yakın ürünler işaretlenmiş",
+    "Depo-raf transferi FIFO'ya uygun",
+    "Sütlük reyonu SKT kontrolü yapıldı",
+    "Yaklaşan SKT ürünler indirim etiketiyle işaretlendi"
+  ]},
+  {id:"reyon",icon:"🛒",title:"Reyon & Raf Düzeni",items:[
+    "Ürünler planoğrama uygun dizilmiş",
+    "Boş raf yoktur / doldurulmuş",
+    "Facing düzeni standart",
+    "Kampanyalı ürünler ön sırada",
+    "İade ürünler ayrıştırılıp firmaya bildirildi",
+    "Yeni gelen ürünler reyona yerleştirildi"
+  ]},
+  {id:"etiket",icon:"🏷️",title:"Fiyat Etiketi & Kampanya",items:[
+    "Tüm ürünlerde fiyat etiketi mevcut",
+    "Insert kampanya etiketleri doğru",
+    "Fiyat-barkod uyumu kontrol edildi",
+    "Promosyon görselleri yerinde",
+    "Insert kampanya ürünleri reyonda mevcut",
+    "Kampanya fiyatları kasada aktif"
+  ]},
+  {id:"depo",icon:"🏭",title:"Depo & Stok",items:[
+    "Depo düzeni ve geçiş yolları temiz",
+    "Stok yerleşimi kategorilere göre",
+    "Bozuk / deforme ürünler ayrılmış",
+    "Soğuk zincir ürünleri uygun",
+    "Merkez depodan transfer tamamlandı",
+    "Fire / imha listesi hazırlandı"
+  ]},
+  {id:"temizlik",icon:"🧹",title:"Temizlik & Hijyen",items:[
+    "Satış alanı temiz ve düzenli",
+    "Soğutucu dolap bakımı yapılmış",
+    "Sütlük reyonu sıcaklık kontrolü yapıldı",
+    "Tuvalet / personel alanı temiz",
+    "Kasa bölgesi düzenli"
+  ]},
+  {id:"personel",icon:"👤",title:"Personel & Hizmet",items:[
+    "Personel kıyafet standardına uyuyor",
+    "Yeterli personel pozisyonda",
+    "Müşteri karşılama aktif",
+    "Vardiya çizelgesi uygulanıyor",
+    "Vardiya devir teslimi gerçekleşti",
+    "Yeni personel oryantasyonu yapıldı"
+  ]}
+];
+const ALL_KEYS=SECTIONS.flatMap(s=>s.items.map((_,i)=>s.id+"_"+i));
+const TOTAL=ALL_KEYS.length;
+
+let state={tab:"form",step:"form",branch:"",inspector:INSPECTORS[0],date:new Date().toISOString().split("T")[0],genNote:"",scores:{},notes:{},openSection:"skt"};
+
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
+function getHistory(){try{return JSON.parse(localStorage.getItem("bp_h")||"[]");}catch(e){return[];}}
+function saveToHistory(r){const h=getHistory();h.unshift(r);localStorage.setItem("bp_h",JSON.stringify(h.slice(0,50)));}
+function deleteHistory(i){const h=getHistory();h.splice(i,1);localStorage.setItem("bp_h",JSON.stringify(h));render();}
+function loadRecord(i){const r=getHistory()[i];Object.assign(state,{branch:r.branch,inspector:r.inspector,date:r.date,scores:r.scores,notes:r.notes,genNote:r.genNote||"",step:"summary",tab:"form"});render();}
+
+function calcStats(sc){
+  sc=sc||state.scores;
+  const ok=ALL_KEYS.filter(k=>sc[k]==="ok").length;
+  const warn=ALL_KEYS.filter(k=>sc[k]==="warn").length;
+  const fail=ALL_KEYS.filter(k=>sc[k]==="fail").length;
+  const filled=ALL_KEYS.filter(k=>sc[k]).length;
+  const pct=filled>0?Math.round((ok/filled)*100):0;
+  const grade=pct>=90?{label:"Mükemmel",color:"#16a34a"}:pct>=75?{label:"İyi",color:"#2563eb"}:pct>=60?{label:"Orta",color:"#ca8a04"}:{label:"Yetersiz",color:"#dc2626"};
+  return{filled,ok,warn,fail,pct,grade};
+}
+function gradeColor(pct){return pct>=90?"#16a34a":pct>=75?"#2563eb":pct>=60?"#ca8a04":"#dc2626";}
+
+function setState(p){Object.assign(state,p);render();}
+function setScore(sid,idx,val){state.scores[sid+"_"+idx]=val;render();}
+function setNote(sid,val){state.notes[sid]=val;}
+function toggleSection(id){setState({openSection:state.openSection===id?"":id});}
+
+function saveAndSummary(){
+  const s=calcStats();
+  saveToHistory({branch:state.branch,inspector:state.inspector,date:state.date,pct:s.pct,ok:s.ok,warn:s.warn,fail:s.fail,scores:JSON.parse(JSON.stringify(state.scores)),notes:JSON.parse(JSON.stringify(state.notes)),genNote:state.genNote,savedAt:new Date().toISOString()});
+  setState({step:"summary"});
+}
+function newForm(){Object.assign(state,{step:"form",branch:"",inspector:INSPECTORS[0],date:new Date().toISOString().split("T")[0],genNote:"",scores:{},notes:{},openSection:"skt"});render();}
+
+// GERÇEK PDF
+function buildReportHTML(){
+  const fd=state.date.split("-");
+  const fdate=fd[2]+"."+fd[1]+"."+fd[0];
+  return `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"/></head><body style="font-family:Arial,sans-serif;padding:20px;color:#1e293b">${buildReportInner()}</body></html>`;
+}
+
+function downloadPDF(){
+  showToast("📄 PDF oluşturuluyor...");
+  // Gizli rapor div oluştur
+  const div=document.createElement("div");
+  div.id="pdf-render-area";
+  div.style.cssText="position:fixed;top:-9999px;left:-9999px;width:794px;background:white;padding:30px;font-family:Arial,Helvetica,sans-serif;z-index:-1";
+  div.innerHTML=buildReportInner();
+  document.body.appendChild(div);
+
+  setTimeout(()=>{
+    html2canvas(div,{
+      scale:2,
+      useCORS:true,
+      backgroundColor:"#ffffff",
+      logging:false
+    }).then(canvas=>{
+      document.body.removeChild(div);
+      try{
+        const{jsPDF}=window.jspdf;
+        const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+        const W=210,H=297;
+        const imgW=W;
+        const imgH=(canvas.height*W)/canvas.width;
+        let y=0;
+        const pageH=H-10;
+        while(y<imgH){
+          if(y>0) pdf.addPage();
+          pdf.addImage(
+            canvas.toDataURL("image/jpeg",0.92),
+            "JPEG",0,-(y),imgW,imgH
+          );
+          y+=pageH;
+        }
+        const fname="Denetim_"+state.branch.replace(/[^a-zA-Z0-9]/g,"_")+"_"+state.date+".pdf";
+        pdf.save(fname);
+        showToast("✅ PDF indirildi!");
+      }catch(e){
+        showToast("Hata: "+e.message);
+        console.error(e);
+      }
+    }).catch(e=>{
+      document.body.removeChild(div);
+      showToast("Hata: "+e.message);
+    });
+  },200);
+}
+
+function buildReportInner(){
+  const{ok,warn,fail,pct,grade}=calcStats();
+  const fd=state.date.split("-");
+  const fdate=fd[2]+"."+fd[1]+"."+fd[0];
+
+  const secRows=SECTIONS.map(sec=>{
+    const rows=sec.items.map((item,i)=>{
+      const s=state.scores[sec.id+"_"+i]||"none";
+      const stxt=s==="ok"?"✓ Uygun":s==="warn"?"! Dikkat":s==="fail"?"x Uygunsuz":"—";
+      const sc=s==="ok"?"#16a34a":s==="warn"?"#ca8a04":s==="fail"?"#dc2626":"#94a3b8";
+      const bg=i%2===0?"#ffffff":"#f8fafc";
+      return `<tr style="background:${bg}">
+        <td style="padding:7px 10px;font-size:12px;border:1px solid #e2e8f0;color:#334155;font-family:Arial">${item}</td>
+        <td style="padding:7px 8px;font-size:11px;border:1px solid #e2e8f0;font-weight:bold;color:${sc};text-align:center;width:90px;font-family:Arial">${stxt}</td>
+      </tr>`;
+    }).join("");
+    const noteRow=state.notes[sec.id]?`<tr><td colspan="2" style="padding:7px 12px;font-size:11px;color:#475569;border:1px solid #e2e8f0;background:#fffbf0;border-left:4px solid #E8A020;font-family:Arial">Not: ${state.notes[sec.id]}</td></tr>`:"";
+    return `<tr><td colspan="2" style="padding:9px 10px;background:#1B3A6B;color:white;font-weight:bold;font-size:13px;border:1px solid #1B3A6B;font-family:Arial">${sec.title}</td></tr>${rows}${noteRow}`;
+  }).join("");
+
+  const genNotHtml=state.genNote?`<div style="margin-top:18px;padding:14px;background:#f0f4f8;border-left:5px solid #1B3A6B"><div style="font-weight:bold;font-size:12px;color:#1B3A6B;margin-bottom:6px;font-family:Arial">Genel Degerlendirme Notu</div><div style="font-size:12px;color:#334155;line-height:1.6;font-family:Arial">${state.genNote}</div></div>`:"";
+
+  return `
+  <div style="background:#1B3A6B;padding:14px 18px;border-radius:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="color:white;font-weight:bold;font-size:18px;font-family:Arial">BİZİM PAZAR GIDA A.Ş.</div>
+      <div style="color:#93c5fd;font-size:11px;margin-top:3px;font-family:Arial">Şube Denetim Raporu</div>
+    </div>
+    <div style="background:#C0212B;padding:8px 16px;border-radius:6px;color:white;font-weight:900;font-size:18px;font-family:Arial">BP</div>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;border:1px solid #e2e8f0">
+    <tr style="background:#f8fafc">
+      <td style="padding:8px 10px;font-size:11px;font-weight:bold;color:#64748b;width:110px;font-family:Arial">ŞUBE</td>
+      <td style="padding:8px 10px;font-size:13px;font-family:Arial">${state.branch}</td>
+      <td style="padding:8px 10px;font-size:11px;font-weight:bold;color:#64748b;width:60px;font-family:Arial">PUAN</td>
+      <td style="padding:8px 10px;font-size:16px;font-weight:bold;color:${grade.color};font-family:Arial">%${pct} — ${grade.label}</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-size:11px;font-weight:bold;color:#64748b;font-family:Arial">TARİH</td>
+      <td style="padding:8px 10px;font-size:13px;font-family:Arial">${fdate}</td>
+      <td></td><td></td>
+    </tr>
+    <tr style="background:#f8fafc">
+      <td style="padding:8px 10px;font-size:11px;font-weight:bold;color:#64748b;font-family:Arial">DENETİMCİ</td>
+      <td style="padding:8px 10px;font-size:13px;font-family:Arial">${state.inspector}</td>
+      <td></td><td></td>
+    </tr>
+  </table>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+    <tr>
+      <td style="padding:8px;background:#dcfce7;text-align:center;font-weight:bold;font-size:12px;color:#16a34a;border:1px solid #bbf7d0;font-family:Arial">✓ Uygun: ${ok}</td>
+      <td style="width:8px"></td>
+      <td style="padding:8px;background:#fef9c3;text-align:center;font-weight:bold;font-size:12px;color:#ca8a04;border:1px solid #fde68a;font-family:Arial">! Dikkat: ${warn}</td>
+      <td style="width:8px"></td>
+      <td style="padding:8px;background:#fee2e2;text-align:center;font-weight:bold;font-size:12px;color:#dc2626;border:1px solid #fecaca;font-family:Arial">x Uygunsuz: ${fail}</td>
+    </tr>
+  </table>
+
+  <table style="width:100%;border-collapse:collapse"><tbody>${secRows}</tbody></table>
+
+  ${genNotHtml}
+
+  <div style="margin-top:28px;border-top:2px dashed #e2e8f0;padding-top:18px;text-align:center">
+    <div style="font-weight:bold;font-size:14px;color:#1B3A6B;font-family:Arial">Mehmet Konur</div>
+    <div style="font-size:11px;color:#64748b;margin-top:3px;font-family:Arial">Operasyon Müdürü</div>
+    <div style="font-size:11px;color:#94a3b8;margin-top:3px;font-family:Arial">${fdate}</div>
+  </div>`;
+}
+
+function downloadWord(){
+  showToast("📝 Word hazırlanıyor...");
+  const html=buildReportHTML();
+  const blob=new Blob([html],{type:"application/msword;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="Denetim_"+state.branch.replace(/ /g,"_")+"_"+state.date+".doc";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("✅ Word indirildi!");
+}
+
+// RENDER
+function render(){document.getElementById("root").innerHTML=buildHTML();}
+
+function buildHeader(){
+  const{filled}=calcStats();
+  const showProg=state.tab==="form"&&state.step==="form";
+  return `<div class="header">
+    <div class="header-inner">
+      <span class="logo">BP</span>
+      <div><div class="header-title">Şube Denetim Formu</div><div class="header-sub">Bizim Pazar Gıda A.Ş.</div></div>
+    </div>
+    ${showProg?`<div class="progress-wrap"><div class="progress-bar" style="width:${(filled/TOTAL)*100}%"></div></div><div class="progress-text">${filled}/${TOTAL} madde tamamlandı</div>`:""}
+    <div class="nav-tabs">
+      <button class="nav-tab ${state.tab==="form"?"active":""}" onclick="setState({tab:'form'})">📋 Form</button>
+      <button class="nav-tab ${state.tab==="history"?"active":""}" onclick="setState({tab:'history'})">📁 Geçmiş</button>
+      <button class="nav-tab ${state.tab==="compare"?"active":""}" onclick="setState({tab:'compare'})">📊 Karşılaştır</button>
+    </div>
+  </div>`;
+}
+
+function buildForm(){
+  const{filled}=calcStats();
+  const canSubmit=state.branch;
+  const branchOpts=BRANCHES.map(b=>`<option ${state.branch===b?"selected":""}>${b}</option>`).join("");
+  const inspOpts=INSPECTORS.map(i=>`<option ${state.inspector===i?"selected":""}>${i}</option>`).join("");
+  const secs=SECTIONS.map(sec=>{
+    const isOpen=state.openSection===sec.id;
+    const sf=sec.items.filter((_,i)=>state.scores[sec.id+"_"+i]).length;
+    const allOk=sf===sec.items.length&&sec.items.every((_,i)=>state.scores[sec.id+"_"+i]==="ok");
+    const hasFail=sec.items.some((_,i)=>state.scores[sec.id+"_"+i]==="fail");
+    const bg=hasFail?"#fee2e2":allOk?"#dcfce7":"#f1f5f9";
+    const fc=hasFail?"#dc2626":allOk?"#16a34a":"#64748b";
+    let body="";
+    if(isOpen){
+      body=sec.items.map((item,idx)=>{
+        const key=sec.id+"_"+idx;const cur=state.scores[key]||"none";
+        return `<div class="item-row"><div class="item-text">${item}</div><div class="btn-group">
+          <button class="status-btn ${cur==="ok"?"active-ok":""}" onclick="setScore('${sec.id}',${idx},'ok')">✅ Uygun</button>
+          <button class="status-btn ${cur==="warn"?"active-warn":""}" onclick="setScore('${sec.id}',${idx},'warn')">⚠️ Dikkat</button>
+          <button class="status-btn ${cur==="fail"?"active-fail":""}" onclick="setScore('${sec.id}',${idx},'fail')">❌ Uygunsuz</button>
+        </div></div>`;
+      }).join("");
+      body+=`<div class="field"><label class="lbl">Bölüm Notu</label>
+        <textarea placeholder="Tespitler, açıklamalar..." onchange="setNote('${sec.id}',this.value)">${state.notes[sec.id]||""}</textarea></div>`;
+    }
+    return `<div class="card">
+      <button class="sec-hdr" onclick="toggleSection('${sec.id}')">
+        <span>${sec.icon} ${sec.title}</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="sec-badge" style="background:${bg};color:${fc}">${sf}/${sec.items.length}</span>
+          <span style="color:#94a3b8;font-size:16px;margin-left:6px">${isOpen?"▲":"▼"}</span>
+        </span>
+      </button>${body}
+    </div>`;
+  }).join("");
+  return `<div class="container">
+    <div class="card">
+      <div class="sec-title">📋 Denetim Bilgileri</div>
+      <div class="field"><label class="lbl">Şube *</label>
+        <select onchange="setState({branch:this.value})"><option value="">-- Şube Seçin --</option>${branchOpts}</select></div>
+      <div class="field"><label class="lbl">Denetimci</label>
+        <select onchange="setState({inspector:this.value})">${inspOpts}</select></div>
+      <div class="field"><label class="lbl">Tarih</label>
+        <input type="date" value="${state.date}" onchange="setState({date:this.value})"/></div>
+    </div>
+    ${secs}
+    <div class="card">
+      <div class="sec-title">📝 Genel Değerlendirme Notu</div>
+      <textarea placeholder="Genel gözlemler ve öneriler..." onchange="setState({genNote:this.value})">${state.genNote}</textarea>
+    </div>
+    <button class="btn-primary" ${canSubmit?"":"disabled"} onclick="saveAndSummary()">
+      ${canSubmit?"📊 Raporu Görüntüle":"Önce Şube Seçin"}
+    </button>
+  </div>`;
+}
+
+function buildSummary(){
+  const{ok,warn,fail,pct,grade}=calcStats();
+  const secs=SECTIONS.map(sec=>{
+    const problems=sec.items.map((item,i)=>({item,status:state.scores[sec.id+"_"+i]})).filter(x=>x.status&&x.status!=="ok");
+    const rows=problems.length===0
+      ?`<div style="color:#16a34a;font-size:13px">Tüm maddeler uygun ✅</div>`
+      :problems.map(x=>`<div style="font-size:13px;color:${x.status==="fail"?"#dc2626":"#ca8a04"};margin-bottom:4px">${x.status==="fail"?"❌":"⚠️"} ${x.item}</div>`).join("");
+    const n=state.notes[sec.id]?`<div class="note-box">📝 ${state.notes[sec.id]}</div>`:"";
+    return `<div class="card"><div class="sec-title">${sec.icon} ${sec.title}</div>${rows}${n}</div>`;
+  }).join("");
+  return `<div class="container">
+    <div class="card" style="text-align:center">
+      <div class="score-big" style="color:${grade.color}">${pct}%</div>
+      <div class="score-label" style="color:${grade.color}">${grade.label}</div>
+      <div class="score-meta">${state.branch} · ${state.date} · ${state.inspector}</div>
+      <div class="badge-row">
+        <span class="badge" style="background:#dcfce7;color:#16a34a">✅ ${ok} Uygun</span>
+        <span class="badge" style="background:#fef9c3;color:#ca8a04">⚠️ ${warn} Dikkat</span>
+        <span class="badge" style="background:#fee2e2;color:#dc2626">❌ ${fail} Uygunsuz</span>
+      </div>
+    </div>
+    ${secs}
+    ${state.genNote?`<div class="card"><div class="sec-title">📋 Genel Not</div><div style="font-size:13px;color:#334155">${state.genNote}</div></div>`:""}
+    <div class="sig-block">
+      <div style="font-weight:700;color:#1B3A6B">Mehmet Konur</div>
+      <div style="font-size:12px;color:#64748b">Operasyon Müdürü</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:4px">${state.date}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <button style="padding:14px;background:#E8A020;color:#1B3A6B;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" onclick="downloadPDF()">📄 PDF İndir</button>
+      <button style="padding:14px;background:#1B3A6B;color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" onclick="downloadWord()">📝 Word İndir</button>
+    </div>
+    <button class="btn-secondary" onclick="setState({step:'form'})">✏️ Düzenle / Forma Dön</button>
+    <button class="btn-secondary" style="margin-top:8px" onclick="newForm()">➕ Yeni Denetim</button>
+  </div>`;
+}
+
+function buildHistory(){
+  const h=getHistory();
+  if(h.length===0) return `<div class="container"><div class="card"><div class="empty-state">
+    <div style="font-size:48px;margin-bottom:12px">📭</div>
+    <div style="font-weight:700;color:#1B3A6B;margin-bottom:8px">Henüz denetim yok</div>
+    <div style="font-size:13px">Rapor görüntüledikten sonra burada görünür.</div>
+  </div></div></div>`;
+  const items=h.map((r,i)=>{
+    const c=gradeColor(r.pct);
+    const d=new Date(r.savedAt);
+    const saved=d.getDate().toString().padStart(2,"0")+"."+(d.getMonth()+1).toString().padStart(2,"0")+"."+d.getFullYear()+" "+d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");
+    return `<div class="history-item" onclick="loadRecord(${i})">
+      <div class="history-score" style="background:${c}">%${r.pct}</div>
+      <div style="flex:1">
+        <div class="history-branch">${r.branch}</div>
+        <div class="history-meta">${r.date} · ${r.inspector}</div>
+        <div class="history-meta">${saved}</div>
+      </div>
+      <button class="history-del" onclick="event.stopPropagation();deleteHistory(${i})">🗑️</button>
+    </div>`;
+  }).join("");
+  return `<div class="container"><div class="card">
+    <div class="sec-title">📁 Denetim Geçmişi (${h.length})</div>${items}
+  </div></div>`;
+}
+
+function buildCompare(){
+  const h=getHistory();
+  if(h.length===0) return `<div class="container"><div class="card"><div class="empty-state">
+    <div style="font-size:48px;margin-bottom:12px">📊</div>
+    <div style="font-weight:700;color:#1B3A6B;margin-bottom:8px">Veri yok</div>
+    <div style="font-size:13px">En az bir denetim kayıtlı olmalı.</div>
+  </div></div></div>`;
+  const bd={};BRANCHES.forEach(b=>{bd[b]={total:0,count:0};});
+  h.forEach(r=>{if(bd[r.branch]){bd[r.branch].total+=r.pct;bd[r.branch].count++;}});
+  const ranked=BRANCHES.map(b=>({name:b,avg:bd[b].count>0?Math.round(bd[b].total/bd[b].count):null,count:bd[b].count})).filter(x=>x.count>0).sort((a,b)=>b.avg-a.avg);
+  const rankBg=["#E8A020","#94a3b8","#cd7f32","#1B3A6B","#1B3A6B"];
+  const rows=ranked.map((item,i)=>{
+    const c=gradeColor(item.avg);
+    const short=item.name.replace(" Şubesi","");
+    return `<div class="compare-row">
+      <div class="compare-rank" style="background:${rankBg[i]}">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px;color:#1e293b">${short}</div>
+        <div style="font-size:11px;color:#94a3b8">${item.count} denetim</div>
+      </div>
+      <div style="width:80px;height:8px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-right:8px">
+        <div style="width:${item.avg}%;height:100%;background:${c};border-radius:99px"></div>
+      </div>
+      <div style="width:36px;text-align:right;font-size:13px;font-weight:800;color:${c}">%${item.avg}</div>
+    </div>`;
+  }).join("");
+  const recRows=h.slice(0,10).map(r=>{
+    const c=gradeColor(r.pct);
+    return `<tr>
+      <td style="padding:6px 8px;font-size:12px;border:1px solid #e2e8f0">${r.branch.replace(" Şubesi","")}</td>
+      <td style="padding:6px 8px;font-size:12px;border:1px solid #e2e8f0">${r.date}</td>
+      <td style="padding:6px 8px;font-size:12px;font-weight:800;color:${c};text-align:center;border:1px solid #e2e8f0">%${r.pct}</td>
+    </tr>`;
+  }).join("");
+  return `<div class="container">
+    <div class="card"><div class="sec-title">🏆 Şube Sıralama (Ortalama Puan)</div>${rows}</div>
+    <div class="card"><div class="sec-title">📋 Son Denetimler</div>
+      <table style="width:100%;border-collapse:collapse">
+        <tr>
+          <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:left;border:1px solid #e2e8f0;background:#f8fafc">ŞUBE</th>
+          <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:left;border:1px solid #e2e8f0;background:#f8fafc">TARİH</th>
+          <th style="padding:6px 8px;font-size:11px;color:#64748b;text-align:center;border:1px solid #e2e8f0;background:#f8fafc">PUAN</th>
+        </tr>${recRows}
+      </table>
+    </div>
+  </div>`;
+}
+
+function buildHTML(){
+  const h=buildHeader();
+  if(state.tab==="history") return h+buildHistory();
+  if(state.tab==="compare") return h+buildCompare();
+  if(state.step==="summary") return h+buildSummary();
+  return h+buildForm();
+}
+
+window.setState=setState;window.setScore=setScore;window.setNote=setNote;
+window.toggleSection=toggleSection;window.saveAndSummary=saveAndSummary;
+window.loadRecord=loadRecord;window.deleteHistory=deleteHistory;
+window.newForm=newForm;window.downloadPDF=downloadPDF;
+window.downloadWord=downloadWord;
+
+render();
+</script>
+</body>
+</html>
