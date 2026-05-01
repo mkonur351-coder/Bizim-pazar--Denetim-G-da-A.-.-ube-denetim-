@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BP Saha Denetim</title>
+
+<!-- PWA Meta Tags -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BP Denetim">
+<meta name="theme-color" content="#1B3A6B">
+<meta name="description" content="Bizim Pazar Saha Denetim Formu">
+
+<!-- PWA Icons (inline SVG as data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231B3A6B'/><text y='68' x='50' text-anchor='middle' font-size='55' font-family='system-ui'>🏪</text></svg>">
+
+<!-- PWA Manifest (inline) -->
+<link rel="manifest" href="data:application/manifest+json,{
+  %22name%22:%22Bizim Pazar Saha Denetim%22,
+  %22short_name%22:%22BP Denetim%22,
+  %22start_url%22:%22.%22,
+  %22display%22:%22standalone%22,
+  %22background_color%22:%22%231B3A6B%22,
+  %22theme_color%22:%22%231B3A6B%22,
+  %22orientation%22:%22portrait%22
+}">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  body{background:#F4F6FA;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;overscroll-behavior-y:contain}
+  input,textarea,select,button{font-family:inherit}
+  @media(display-mode:standalone){body{padding-top:env(safe-area-inset-top)}}
+</style>
+</head>
+<body>
+<div id="root" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1B3A6B">
+  <div style="color:white;text-align:center"><div style="font-size:40px;margin-bottom:12px">⏳</div><div style="font-size:16px;font-weight:600">Yükleniyor...</div></div>
+</div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+const NAVY='#1B3A6B', RED='#C0212B', GOLD='#E8A020', GREEN='#2E7D32';
+const STORAGE_KEY='bp-saha-v3';
+const BRANCHES=['Adliye Şubesi','Adana Yolu Şubesi','Cengiz Topel Şubesi','Andırın Caddesi Şubesi','Osmaniye Yolu Şubesi','Merkez Depo'];
+const STEPS=['Genel','Raf & Plan.','SKT','Etiket','Depo','Personel','İade','Değerl.','Rapor'];
+
+const initData={
+  genel:{sube:'',tarih:new Date().toISOString().split('T')[0],bas:'',bitis:'',denetci:'Mehmet Konur'},
+  raf:{planogram:'',marka:'',doluluk:'',fifo:'',notlar:'',photos:[]},
+  skt:{sktVar:'',yakinVar:'',fifo:'',liste:[],notlar:'',photos:[]},
+  etiket:{dogruluk:'',kampanya:'',eksik:'',yanlis:'',notlar:'',photos:[]},
+  depo:{genel:'',fifo:'',transfer:'',iade:'',soguk:'',notlar:'',photos:[]},
+  personel:{unifroma:'',hijyen:'',gorev:'',musteri:'',notlar:'',photos:[]},
+  iade:{var:'',adet:'',firma:'',sure:'',notlar:'',photos:[]},
+  degerl:{kritik:'',onceki:'',yeni:'',genel:'',photos:[]},
+};
+
+/* ── Helpers ── */
+function calcScore(fd){
+  const v=(val,g,m=[])=>val===''||val===undefined?null:g.includes(val)?1:m.includes(val)?0.6:0;
+  const avg=a=>{const f=a.filter(x=>x!==null);return f.length?f.reduce((a,b)=>a+b,0)/f.length:0.7};
+  return Math.round(
+    avg([v(fd.raf.planogram,['Tam'],['Kısmi']),v(fd.raf.marka,['Tam'],['Kısmi']),v(fd.raf.fifo,['Tam'],['Kısmi'])])*20+
+    avg([v(fd.skt.sktVar,['Hayır']),v(fd.skt.fifo,['Tam'],['Kısmi'])])*25+
+    avg([v(fd.etiket.dogruluk,['Tam'],['Kısmi']),v(fd.etiket.kampanya,['Tam'],['Kısmi'])])*15+
+    avg([v(fd.depo.genel,['İyi'],['Orta']),v(fd.depo.fifo,['Tam'],['Kısmi']),v(fd.depo.transfer,['Tam'],['Kısmi'])])*15+
+    avg([v(fd.personel.unifroma,['Tam'],['Kısmi']),v(fd.personel.hijyen,['Tam'],['Kısmi']),v(fd.personel.gorev,['Tam'],['Kısmi'])])*15+
+    avg([v(fd.iade.var,['Hayır'])])*10
+  );
+}
+const sco=s=>s>=80?GREEN:s>=60?GOLD:RED;
+const slbl=s=>s>=80?'✅ BAŞARILI':s>=60?'⚠️ GELİŞTİRİLMELİ':'🔴 KRİTİK';
+
+function compressImage(file){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const MAX=1100,scale=Math.min(1,MAX/Math.max(img.width,img.height));
+        canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.72));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ── Barcode Modal — fotoğraf çek → barkod oku (file:// uyumlu) ── */
+function BarcodeModal({onClose,onResult}){
+  const fileRef=useRef(null);
+  const [status,setStatus]=useState('');
+  const [manual,setManual]=useState('');
+  const [found,setFound]=useState(null);
+  const [searching,setSearching]=useState(false);
+  const [step2,setStep2]=useState('idle'); // idle | scanning | found
+
+  const handlePhoto=async(e)=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    setStep2('scanning');
+    setStatus('🔍 Barkod okunuyor...');
+    try{
+      if(!('BarcodeDetector' in window)){
+        setStatus('❌ Cihaz barkod taramayı desteklemiyor. Manuel barkod girin.');
+        setStep2('idle');return;
+      }
+      const bitmap=await createImageBitmap(file);
+      const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf']});
+      const results=await detector.detect(bitmap);
+      if(results.length>0){
+        await lookupProduct(results[0].rawValue);
+      }else{
+        setStatus('⚠️ Barkod okunamadı. Tekrar çekin veya daha yakından çekin.');
+        setStep2('idle');
+      }
+    }catch(err){
+      setStatus('⚠️ Hata oluştu. Manuel barkod girin.');
+      setStep2('idle');
+    }
+    e.target.value='';
+  };
+
+  const lookupProduct=async(barcode)=>{
+    setSearching(true);setStatus('🌐 Ürün bilgisi aranıyor...');
+    let name='';
+    try{
+      const res=await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+      const data=await res.json();
+      if(data.status===1){
+        name=data.product.product_name_tr||data.product.product_name||data.product.abbreviated_product_name||'';
+        name=name.trim().split(',')[0].trim();
+      }
+    }catch(e){}
+    setFound({barcode,name});
+    setSearching(false);setStep2('found');
+    setStatus(name?'✅ Ürün bulundu':'⚠️ Ürün bulunamadı — adı yazın');
+  };
+
+  const doManual=async()=>{
+    const code=manual.trim();
+    if(!code) return;
+    await lookupProduct(code);
+  };
+
+  const confirm=()=>{if(found) onResult(found);onClose();};
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.95)',zIndex:2000,display:'flex',flexDirection:'column',overflowY:'auto'}}>
+      {/* Header */}
+      <div style={{background:NAVY,padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+        <span style={{color:'white',fontWeight:700,fontSize:16}}>📷 Barkod Tara</span>
+        <button onClick={onClose} style={{background:'none',border:'none',color:'white',fontSize:28,cursor:'pointer',lineHeight:1,padding:'0 4px'}}>×</button>
+      </div>
+
+      <div style={{flex:1,display:'flex',flexDirection:'column',padding:20,gap:16}}>
+
+        {/* Nasıl Çalışır */}
+        {step2==='idle'&&!searching&&(
+          <div style={{background:'rgba(255,255,255,0.08)',borderRadius:12,padding:16,color:'#ccc',fontSize:13,lineHeight:1.7}}>
+            <div style={{color:'white',fontWeight:700,fontSize:15,marginBottom:8}}>📷 Barkod Nasıl Taranır?</div>
+            <div>1. Aşağıdaki "📷 Fotoğraf Çek" butonuna basın</div>
+            <div>2. Barkodu ekrana getirip fotoğraf çekin</div>
+            <div>3. Uygulama barkodu otomatik okur</div>
+          </div>
+        )}
+
+        {/* Fotoğraf çek butonu */}
+        {step2!=='found'&&(
+          <button onClick={()=>fileRef.current?.click()} disabled={searching}
+            style={{padding:'18px',background:searching?'#555':GOLD,color:'white',border:'none',borderRadius:14,fontWeight:700,fontSize:18,cursor:searching?'default':'pointer',flexShrink:0}}>
+            {searching?'⏳ İşleniyor...':'📷 Fotoğraf Çek'}
+          </button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{display:'none'}}/>
+
+        {/* Status */}
+        {status&&(
+          <div style={{textAlign:'center',color:status.startsWith('✅')?'#4CAF50':status.startsWith('❌')||status.startsWith('⚠️')?GOLD:'#90CAF9',fontSize:14,fontWeight:600}}>
+            {status}
+          </div>
+        )}
+
+        {/* Found result */}
+        {found&&step2==='found'&&(
+          <div style={{background:'white',borderRadius:14,padding:18}}>
+            <div style={{fontSize:11,color:'#888',marginBottom:3}}>Okunan Barkod:</div>
+            <div style={{fontWeight:700,fontSize:17,color:NAVY,marginBottom:14,fontFamily:'monospace'}}>{found.barcode}</div>
+            <div style={{fontSize:12,color:'#666',marginBottom:6}}>
+              Ürün Adı:{!found.name&&<span style={{color:GOLD,marginLeft:6}}>Bulunamadı — lütfen girin</span>}
+            </div>
+            <input value={found.name} onChange={e=>setFound({...found,name:e.target.value})} placeholder="Ürün adını girin..."
+              style={{width:'100%',padding:'12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:15,boxSizing:'border-box',marginBottom:14,outline:'none'}}/>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>{setFound(null);setStep2('idle');setStatus('');}}
+                style={{flex:1,padding:13,background:'#eee',color:'#333',border:'none',borderRadius:9,fontWeight:600,cursor:'pointer',fontSize:14}}>
+                ↩ Tekrar
+              </button>
+              <button onClick={confirm}
+                style={{flex:2,padding:13,background:GREEN,color:'white',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontSize:15}}>
+                ✅ Ekle
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Ayraç */}
+        {step2!=='found'&&<div style={{display:'flex',alignItems:'center',gap:10,color:'#666',fontSize:12}}><div style={{flex:1,height:1,background:'rgba(255,255,255,0.15)'}}/><span>veya</span><div style={{flex:1,height:1,background:'rgba(255,255,255,0.15)'}}/></div>}
+
+        {/* Manuel giriş */}
+        {step2!=='found'&&(
+          <div>
+            <div style={{color:'#aaa',fontSize:12,marginBottom:8}}>Barkod numarasını manuel girin:</div>
+            <div style={{display:'flex',gap:8}}>
+              <input value={manual} onChange={e=>setManual(e.target.value)} placeholder="8690000000000" type="number"
+                onKeyDown={e=>e.key==='Enter'&&doManual()}
+                style={{flex:1,padding:'12px',border:'none',borderRadius:9,fontSize:15,outline:'none',background:'white'}}/>
+              <button onClick={doManual}
+                style={{padding:'12px 18px',background:GOLD,color:'white',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontSize:14}}>Ara</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Install Banner ── */
+function InstallBanner(){
+  const [show,setShow]=useState(false);
+  const [dismissed,setDismissed]=useState(false);
+  useEffect(()=>{
+    const d=localStorage.getItem('bp-install-dismissed');
+    if(d) return;
+    const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+    if(!isStandalone) setShow(true);
+  },[]);
+  if(!show||dismissed) return null;
+  return(
+    <div style={{background:GOLD,padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+      <div style={{fontSize:12,color:'white',fontWeight:600,lineHeight:1.4}}>
+        📲 <b>Ana Ekrana Ekle</b><br/>
+        <span style={{fontWeight:400,opacity:.9}}>Tarayıcı menüsü → "Ana ekrana ekle"</span>
+      </div>
+      <button onClick={()=>{setDismissed(true);localStorage.setItem('bp-install-dismissed','1');}} style={{background:'rgba(255,255,255,0.3)',border:'none',color:'white',borderRadius:6,padding:'6px 10px',fontSize:12,cursor:'pointer',fontWeight:600,flexShrink:0}}>
+        Tamam
+      </button>
+    </div>
+  );
+}
+
+/* ── Photo Picker ── */
+function PhotoPicker({photos=[],onChange}){
+  const inputRef=useRef(null);
+  const handleFile=async(e)=>{
+    const file=e.target.files[0];if(!file) return;
+    const data=await compressImage(file);
+    onChange([...photos,{id:Date.now(),data}]);
+    e.target.value='';
+  };
+  const remove=id=>onChange(photos.filter(p=>p.id!==id));
+  return(
+    <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid #eee'}}>
+      <div style={{fontSize:13,fontWeight:600,color:'#444',marginBottom:10}}>📸 Fotoğraflar</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:9}}>
+        {photos.map(p=>(
+          <div key={p.id} style={{position:'relative'}}>
+            <img src={p.data} style={{width:86,height:86,objectFit:'cover',borderRadius:10,border:'1px solid #ddd',display:'block'}}/>
+            <button onClick={()=>remove(p.id)} style={{position:'absolute',top:-7,right:-7,width:23,height:23,borderRadius:'50%',background:RED,color:'white',border:'2.5px solid white',fontSize:13,cursor:'pointer',lineHeight:1,padding:0,fontWeight:700}}>×</button>
+          </div>
+        ))}
+        <button onClick={()=>inputRef.current?.click()} style={{width:86,height:86,borderRadius:10,border:`2px dashed ${GOLD}`,background:'#FFFBEF',color:GOLD,fontSize:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>📷</button>
+      </div>
+      <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{display:'none'}}/>
+    </div>
+  );
+}
+
+/* ── UI Primitives ── */
+function Radio({label,opts,value,onChange,req}){
+  return(<div style={{marginBottom:18}}>
+    <div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:8}}>{label}{req&&<span style={{color:RED}}> *</span>}</div>
+    <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+      {opts.map(o=><button key={o.v} onClick={()=>onChange(o.v)} style={{padding:'9px 15px',borderRadius:22,border:`2px solid ${value===o.v?o.c||NAVY:'#ddd'}`,background:value===o.v?o.c||NAVY:'white',color:value===o.v?'white':'#333',fontSize:13,cursor:'pointer',fontWeight:value===o.v?700:400}}>{o.l}</button>)}
+    </div>
+  </div>);
+}
+function TInput({label,value,onChange,type='text',placeholder,half}){
+  return(<div style={{marginBottom:14,flex:half?1:undefined}}>
+    {label&&<div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:5}}>{label}</div>}
+    <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||''}
+      style={{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,outline:'none',background:'white'}}/>
+  </div>);
+}
+function TArea({label,value,onChange,placeholder,rows=3}){
+  return(<div style={{marginBottom:14}}>
+    {label&&<div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:5}}>{label}</div>}
+    <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||''} rows={rows}
+      style={{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:13,outline:'none',resize:'vertical',background:'white'}}/>
+  </div>);
+}
+function Card({children,bg='#fff',border='#E0E0E0',accent}){
+  return(<div style={{background:bg,border:`1px solid ${border}`,borderLeft:accent?`4px solid ${accent}`:undefined,borderRadius:12,padding:16,marginBottom:14}}>{children}</div>);
+}
+function SecTitle({icon,title,sub}){
+  return(<div style={{marginBottom:20}}><h2 style={{color:NAVY,fontSize:19,fontWeight:800,margin:0}}>{icon} {title}</h2>{sub&&<p style={{color:'#666',fontSize:13,margin:'4px 0 0'}}>{sub}</p>}</div>);
+}
+
+/* ── Sections ── */
+function Sec0({fd,upd}){
+  const d=fd.genel;
+  return(<div>
+    <SecTitle icon="📋" title="Genel Bilgiler" sub="Denetim başlangıç bilgilerini doldurun"/>
+    <Card>
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:5}}>Şube <span style={{color:RED}}>*</span></div>
+        <select value={d.sube} onChange={e=>upd('genel','sube',e.target.value)} style={{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none'}}>
+          <option value="">Şube seçin...</option>
+          {BRANCHES.map(b=><option key={b}>{b}</option>)}
+        </select>
+      </div>
+      <TInput label="Denetim Tarihi" type="date" value={d.tarih} onChange={v=>upd('genel','tarih',v)}/>
+      <div style={{display:'flex',gap:10}}>
+        <TInput label="Başlangıç" type="time" value={d.bas} onChange={v=>upd('genel','bas',v)} half/>
+        <TInput label="Bitiş" type="time" value={d.bitis} onChange={v=>upd('genel','bitis',v)} half/>
+      </div>
+      <TInput label="Denetçi" value={d.denetci} onChange={v=>upd('genel','denetci',v)}/>
+    </Card>
+  </div>);
+}
+
+function Sec1({fd,upd,updP}){
+  const d=fd.raf;
+  const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
+  return(<div>
+    <SecTitle icon="📦" title="Raf & Planogram" sub="Raf düzeni ve planogram uyumu"/>
+    <Card>
+      <Radio label="Planogram Uyumu" opts={o3} value={d.planogram} onChange={v=>upd('raf','planogram',v)} req/>
+      <Radio label="Marka Blok Uygulaması" opts={o3} value={d.marka} onChange={v=>upd('raf','marka',v)} req/>
+      <Radio label="Raf Doluluk" opts={[{v:'Tam',l:'✅ %90+',c:GREEN},{v:'Kısmi',l:'⚠️ %70-89',c:GOLD},{v:'Yok',l:'🔴 <%70',c:RED}]} value={d.doluluk} onChange={v=>upd('raf','doluluk',v)}/>
+      <Radio label="FIFO / Ürün Rotasyonu" opts={o3} value={d.fifo} onChange={v=>upd('raf','fifo',v)} req/>
+      <TArea label="Notlar" value={d.notlar} onChange={v=>upd('raf','notlar',v)} placeholder="Raf ile ilgili tespitler..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('raf',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec2({fd,setFd,save,step,updP}){
+  const d=fd.skt;
+  const [item,setItem]=useState({barkod:'',urun:'',skt:'',miktar:'',alan:''});
+  const [scanner,setScanner]=useState(false);
+  const updF=(f,v)=>{const nd={...fd,skt:{...d,[f]:v}};setFd(nd);save(nd,step);};
+  const addItem=()=>{
+    if(!item.urun.trim()) return;
+    const nd={...fd,skt:{...d,liste:[...(d.liste||[]),{...item,id:Date.now()}]}};
+    setFd(nd);save(nd,step);setItem({barkod:'',urun:'',skt:'',miktar:'',alan:''});
+  };
+  const del=id=>{const nd={...fd,skt:{...d,liste:d.liste.filter(x=>x.id!==id)}};setFd(nd);save(nd,step);};
+  const onScan=result=>setItem(prev=>({...prev,barkod:result.barcode,urun:result.name||prev.urun}));
+  return(<div>
+    {scanner&&<BarcodeModal onClose={()=>setScanner(false)} onResult={onScan}/>}
+    <SecTitle icon="⏰" title="SKT Kontrolü" sub="Son kullanma tarihi ve FIFO denetimi"/>
+    <Card>
+      <Radio label="SKT Geçmiş Ürün Var Mı?" opts={[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'🔴 Evet',c:RED}]} value={d.sktVar} onChange={v=>updF('sktVar',v)} req/>
+      <Radio label="Yakın SKT (7 gün içinde)?" opts={[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}]} value={d.yakinVar} onChange={v=>updF('yakinVar',v)}/>
+      <Radio label="FIFO Uygulaması" opts={[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}]} value={d.fifo} onChange={v=>updF('fifo',v)} req/>
+    </Card>
+    <div style={{background:'#FDECEA',border:`1px solid ${RED}`,borderRadius:12,padding:16,marginBottom:14}}>
+      <div style={{fontWeight:700,color:RED,fontSize:15,marginBottom:12}}>🔴 SKT / Sorunlu Ürün Listesi</div>
+      <div style={{background:'white',borderRadius:9,padding:12,marginBottom:10}}>
+        <div style={{display:'flex',gap:8,marginBottom:8,alignItems:'flex-end'}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,color:'#666',marginBottom:4}}>Barkod</div>
+            <input value={item.barkod} onChange={e=>setItem({...item,barkod:e.target.value})} placeholder="Barkod no"
+              style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/>
+          </div>
+          <button onClick={()=>setScanner(true)} style={{padding:'9px 14px',background:NAVY,color:'white',border:'none',borderRadius:7,fontSize:13,cursor:'pointer',fontWeight:700,flexShrink:0}}>
+            📷 Tara
+          </button>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+          <div style={{gridColumn:'1/-1'}}>
+            <div style={{fontSize:12,color:'#666',marginBottom:4}}>Ürün Adı *</div>
+            <input value={item.urun} onChange={e=>setItem({...item,urun:e.target.value})} placeholder="Ürün adı"
+              style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/>
+          </div>
+          <div>
+            <div style={{fontSize:12,color:'#666',marginBottom:4}}>SKT Tarihi</div>
+            <input type="date" value={item.skt} onChange={e=>setItem({...item,skt:e.target.value})}
+              style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/>
+          </div>
+          <div>
+            <div style={{fontSize:12,color:'#666',marginBottom:4}}>Miktar</div>
+            <input value={item.miktar} onChange={e=>setItem({...item,miktar:e.target.value})} placeholder="Adet"
+              style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/>
+          </div>
+          <div style={{gridColumn:'1/-1'}}>
+            <div style={{fontSize:12,color:'#666',marginBottom:4}}>Alan / Raf No</div>
+            <input value={item.alan} onChange={e=>setItem({...item,alan:e.target.value})} placeholder="Raf 3A..."
+              style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/>
+          </div>
+        </div>
+        <button onClick={addItem} style={{width:'100%',padding:11,background:RED,color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:14,cursor:'pointer'}}>+ Ürün Ekle</button>
+      </div>
+      {(d.liste||[]).length===0
+        ?<div style={{color:'#999',fontSize:13,textAlign:'center',padding:'8px 0'}}>Henüz ürün eklenmedi</div>
+        :(d.liste||[]).map(it=>(
+          <div key={it.id} style={{background:'white',borderRadius:8,padding:'10px 12px',marginBottom:7,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:14}}>{it.urun}</div>
+              <div style={{fontSize:12,color:'#666',marginTop:2}}>{it.barkod&&`${it.barkod} • `}SKT: {it.skt||'?'} • {it.miktar||'?'} adet{it.alan&&` • ${it.alan}`}</div>
+            </div>
+            <button onClick={()=>del(it.id)} style={{background:'none',border:'none',color:RED,fontSize:22,cursor:'pointer',padding:'0 4px',lineHeight:1,flexShrink:0}}>×</button>
+          </div>
+        ))
+      }
+    </div>
+    <Card>
+      <TArea label="Ek Notlar" value={d.notlar} onChange={v=>updF('notlar',v)} placeholder="SKT ile ilgili ek tespitler..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('skt',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec3({fd,upd,updP}){
+  const d=fd.etiket;
+  const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Sorunlu',l:'🔴 Sorunlu',c:RED}];
+  return(<div>
+    <SecTitle icon="🏷️" title="Fiyat & Etiket" sub="Fiyat doğruluğu ve kampanya etiket kontrolü"/>
+    <Card>
+      <Radio label="Fiyat Etiketi Doğruluğu" opts={o3} value={d.dogruluk} onChange={v=>upd('etiket','dogruluk',v)} req/>
+      <Radio label="Kampanya Etiketi" opts={[{v:'Tam',l:'✅ Doğru',c:GREEN},{v:'Kısmi',l:'⚠️ Eksik',c:GOLD},{v:'Sorunlu',l:'🔴 Yanlış',c:RED}]} value={d.kampanya} onChange={v=>upd('etiket','kampanya',v)} req/>
+      <div style={{display:'flex',gap:10}}>
+        <TInput label="Eksik Etiket (adet)" type="number" value={d.eksik} onChange={v=>upd('etiket','eksik',v)} placeholder="0" half/>
+        <TInput label="Yanlış Fiyat (adet)" type="number" value={d.yanlis} onChange={v=>upd('etiket','yanlis',v)} placeholder="0" half/>
+      </div>
+      <TArea label="Notlar" value={d.notlar} onChange={v=>upd('etiket','notlar',v)} placeholder="Etiket sorunlarını detaylandırın..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('etiket',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec4({fd,upd,updP}){
+  const d=fd.depo;
+  const oi=[{v:'İyi',l:'✅ İyi',c:GREEN},{v:'Orta',l:'⚠️ Orta',c:GOLD},{v:'Kötü',l:'🔴 Kötü',c:RED}];
+  const ot=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
+  return(<div>
+    <SecTitle icon="🏭" title="Depo Düzeni" sub="Depo organizasyonu ve transfer disiplini"/>
+    <Card>
+      <Radio label="Depo Genel Düzeni" opts={oi} value={d.genel} onChange={v=>upd('depo','genel',v)} req/>
+      <Radio label="FIFO Depo Uyumu" opts={ot} value={d.fifo} onChange={v=>upd('depo','fifo',v)} req/>
+      <Radio label="Raf-Depo Transfer Disiplini" opts={ot} value={d.transfer} onChange={v=>upd('depo','transfer',v)} req/>
+      <Radio label="İade Köşesi Düzeni" opts={oi} value={d.iade} onChange={v=>upd('depo','iade',v)}/>
+      <Radio label="Soğuk Zincir / Sütlük Dolabı" opts={oi} value={d.soguk} onChange={v=>upd('depo','soguk',v)}/>
+      <TArea label="Notlar" value={d.notlar} onChange={v=>upd('depo','notlar',v)} placeholder="Depo ile ilgili tespitler..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('depo',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec5({fd,upd,updP}){
+  const d=fd.personel;
+  const ot=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
+  return(<div>
+    <SecTitle icon="👥" title="Personel & Hijyen" sub="Personel görünümü ve görev bilinci"/>
+    <Card>
+      <Radio label="Üniforma Uyumu" opts={ot} value={d.unifroma} onChange={v=>upd('personel','unifroma',v)} req/>
+      <Radio label="Kişisel Hijyen" opts={ot} value={d.hijyen} onChange={v=>upd('personel','hijyen',v)} req/>
+      <Radio label="Görev Bilinci" opts={[{v:'Tam',l:'✅ Yüksek',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Düşük',c:RED}]} value={d.gorev} onChange={v=>upd('personel','gorev',v)} req/>
+      <Radio label="Müşteri İlişkileri" opts={[{v:'Tam',l:'✅ İyi',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Kötü',c:RED}]} value={d.musteri} onChange={v=>upd('personel','musteri',v)}/>
+      <TArea label="Notlar" value={d.notlar} onChange={v=>upd('personel','notlar',v)} placeholder="Personel ile ilgili tespitler..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('personel',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec6({fd,upd,updP}){
+  const d=fd.iade;
+  return(<div>
+    <SecTitle icon="🔄" title="İade Yönetimi" sub="Depoda bekleyen iade ürün durumu"/>
+    <Card>
+      <Radio label="Bekleyen İade Ürün Var Mı?" opts={[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}]} value={d.var} onChange={v=>upd('iade','var',v)} req/>
+      {d.var==='Evet'&&(<>
+        <div style={{display:'flex',gap:10}}>
+          <TInput label="Ürün Adedi" type="number" value={d.adet} onChange={v=>upd('iade','adet',v)} placeholder="0" half/>
+          <TInput label="En Uzun Bekleme (gün)" type="number" value={d.sure} onChange={v=>upd('iade','sure',v)} placeholder="0" half/>
+        </div>
+        <TArea label="Firmalar / Markalar" value={d.firma} onChange={v=>upd('iade','firma',v)} placeholder="Hangi firmaların ürünleri bekliyor?" rows={2}/>
+      </>)}
+      <TArea label="Notlar" value={d.notlar} onChange={v=>upd('iade','notlar',v)} placeholder="İade ile ilgili notlar..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('iade',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec7({fd,upd,updP}){
+  const d=fd.degerl,score=calcScore(fd),sc2=sco(score);
+  return(<div>
+    <SecTitle icon="⭐" title="Genel Değerlendirme" sub="Denetim sonuç özeti ve aksiyonlar"/>
+    <div style={{background:sc2,color:'white',borderRadius:14,padding:'22px 20px',textAlign:'center',marginBottom:20}}>
+      <div style={{fontSize:56,fontWeight:800,lineHeight:1}}>{score}</div>
+      <div style={{fontSize:14,opacity:.85,margin:'4px 0'}}>/100 Puan</div>
+      <div style={{fontSize:15,fontWeight:700}}>{slbl(score)}</div>
+    </div>
+    <Card accent={RED}><TArea label="🔴 Kritik Bulgular" value={d.kritik} onChange={v=>upd('degerl','kritik',v)} placeholder="Acil müdahale gerektiren tespitler..."/></Card>
+    <Card>
+      <TArea label="📋 Önceki Aksiyon Durumları" value={d.onceki} onChange={v=>upd('degerl','onceki',v)} placeholder="Önceki aksiyonlar tamamlandı mı?"/>
+      <TArea label="✅ Yeni Aksiyonlar" value={d.yeni} onChange={v=>upd('degerl','yeni',v)} placeholder="Alınması gereken aksiyonlar ve sorumluları..."/>
+      <TArea label="📝 Genel Notlar" value={d.genel} onChange={v=>upd('degerl','genel',v)} placeholder="Genel değerlendirme..."/>
+      <PhotoPicker photos={d.photos||[]} onChange={p=>updP('degerl',p)}/>
+    </Card>
+  </div>);
+}
+
+function Sec8({fd,onPDF,onWord,onClear}){
+  const score=calcScore(fd),sc2=sco(score),g=fd.genel;
+  const totalPhotos=[fd.raf,fd.skt,fd.etiket,fd.depo,fd.personel,fd.iade,fd.degerl].reduce((n,s)=>n+(s.photos||[]).length,0);
+  const rows=[
+    ['Raf & Planogram',fd.raf.planogram],
+    ['SKT Durumu',fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—'],
+    ['Fiyat & Etiket',fd.etiket.dogruluk],
+    ['Depo Düzeni',fd.depo.genel],
+    ['Personel',fd.personel.unifroma],
+    ['İade Durumu',fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—'],
+  ];
+  const vc=v=>!v||v==='—'?'#aaa':v.includes('✅')||['Tam','İyi'].includes(v)?GREEN:v.includes('⚠️')||['Kısmi','Orta'].includes(v)?GOLD:RED;
+  return(<div>
+    <SecTitle icon="📄" title="Rapor & İndir" sub="Özet görüntüle ve telefona indir"/>
+    <div style={{background:`${NAVY}12`,border:`1px solid ${NAVY}30`,borderRadius:12,padding:16,marginBottom:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div>
+          <div style={{fontWeight:700,color:NAVY,fontSize:15}}>{g.sube||'Şube belirtilmedi'}</div>
+          <div style={{fontSize:12,color:'#555',marginTop:2}}>{g.tarih} • {g.bas||'--:--'} – {g.bitis||'--:--'}</div>
+          <div style={{fontSize:12,color:'#555'}}>{g.denetci}</div>
+          {totalPhotos>0&&<div style={{fontSize:12,color:GOLD,marginTop:2}}>📸 {totalPhotos} fotoğraf</div>}
+        </div>
+        <div style={{textAlign:'center',background:sc2,color:'white',borderRadius:12,padding:'10px 16px',minWidth:72}}>
+          <div style={{fontSize:32,fontWeight:800,lineHeight:1}}>{score}</div>
+          <div style={{fontSize:11}}>/100</div>
+        </div>
+      </div>
+      <div style={{marginTop:10,fontSize:13,fontWeight:700,color:sc2}}>{slbl(score)}</div>
+    </div>
+    <Card>
+      {rows.map(([l,v],i)=>(
+        <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'}}>
+          <span style={{fontSize:14,color:'#333'}}>{l}</span>
+          <span style={{fontSize:13,fontWeight:700,color:vc(v)}}>{v||'—'}</span>
+        </div>
+      ))}
+    </Card>
+    {(fd.skt.liste||[]).length>0&&(
+      <Card bg="#FDECEA" border={RED}>
+        <div style={{fontWeight:700,color:RED,marginBottom:8}}>🔴 SKT Sorunlu Ürünler ({fd.skt.liste.length} adet)</div>
+        {fd.skt.liste.map((it,i)=>(
+          <div key={i} style={{fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'}}>
+            <b>{it.urun}</b>{it.barkod&&<span style={{color:'#888'}}> ({it.barkod})</span>} — SKT: {it.skt||'?'} — {it.miktar||'?'} adet{it.alan?` — ${it.alan}`:''}
+          </div>
+        ))}
+      </Card>
+    )}
+    {fd.degerl.kritik&&(
+      <Card bg="#FDECEA" border={RED} accent={RED}>
+        <div style={{fontWeight:700,color:RED,marginBottom:6}}>🔴 Kritik Bulgular</div>
+        <div style={{fontSize:13,whiteSpace:'pre-wrap'}}>{fd.degerl.kritik}</div>
+      </Card>
+    )}
+    <div style={{display:'flex',flexDirection:'column',gap:12,marginTop:24}}>
+      <button onClick={onPDF} style={{padding:15,background:RED,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:16,cursor:'pointer',boxShadow:'0 3px 10px rgba(192,33,43,0.35)'}}>📄 PDF Olarak İndir</button>
+      <button onClick={onWord} style={{padding:15,background:NAVY,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:16,cursor:'pointer',boxShadow:'0 3px 10px rgba(27,58,107,0.3)'}}>📝 Word Belgesi İndir</button>
+      <button onClick={onClear} style={{padding:12,background:'transparent',color:'#aaa',border:'1px solid #ddd',borderRadius:12,fontSize:14,cursor:'pointer'}}>🗑️ Formu Sıfırla</button>
+    </div>
+  </div>);
+}
+
+/* ── Report Builder ── */
+function buildHTML(fd,score){
+  const ns=v=>v||'-',g=fd.genel,sc2=sco(score);
+  const sktRows=(fd.skt.liste||[]).map(it=>`<tr><td>${ns(it.barkod)}</td><td><b>${it.urun}</b></td><td>${ns(it.skt)}</td><td>${ns(it.miktar)}</td><td>${ns(it.alan)}</td></tr>`).join('');
+  const row=(l,v)=>v?`<div class="row"><span class="lbl">${l}</span><span>${v}</span></div>`:'';
+  const pgrid=(photos=[])=>photos.length>0?`<div class="photos"><div class="pl">📸 Fotoğraflar:</div><div class="pg">${photos.slice(0,6).map(p=>`<img src="${p.data}">`).join('')}</div></div>`:'';
+  return`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Saha Denetim Raporu</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a1a}
+.hdr{background:#1B3A6B;color:white;padding:18px 24px;text-align:center}.hdr h1{font-size:18px;font-weight:800}.hdr p{font-size:12px;opacity:.75;margin-top:3px}
+.body{padding:20px 24px}.sb{display:inline-block;background:${sc2};color:white;border-radius:10px;padding:14px 20px;text-align:center;margin:14px 0}.sb .n{font-size:40px;font-weight:800;line-height:1}.sb .lb{font-size:13px;font-weight:700;margin-top:5px}
+table.meta{width:100%;border-collapse:collapse;margin:12px 0}table.meta td{border:1px solid #ddd;padding:7px 10px}table.meta td:first-child{background:#E8EEF7;font-weight:600;width:38%}
+.sec{background:#E8A020;color:white;padding:7px 12px;font-weight:700;font-size:12px;margin:14px 0 7px;border-radius:5px}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.lbl{color:#555}
+.note{background:#F0F4FA;border-left:3px solid #1B3A6B;padding:7px 10px;font-size:11px;color:#444;margin:6px 0}
+.rbox{background:#FDECEA;border:1px solid #C0212B;border-radius:7px;padding:12px;margin:10px 0}.rbox h4{color:#C0212B;margin-bottom:8px}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}table.dt th{background:#C0212B;color:white;padding:5px 8px;text-align:left}table.dt td{border:1px solid #ddd;padding:5px 8px}table.dt tr:nth-child(even) td{background:#FFF5F5}
+.photos{margin:10px 0}.pl{font-weight:600;font-size:11px;margin-bottom:7px}.pg{display:flex;flex-wrap:wrap;gap:7px}.pg img{width:150px;height:113px;object-fit:cover;border-radius:6px;border:1px solid #ddd}
+.sig{margin-top:36px;border-top:2px solid #1B3A6B;padding-top:14px}
+@media print{body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="hdr"><h1>BİZİM PAZAR GIDA A.Ş.</h1><p>Saha Denetim Raporu</p></div>
+<div class="body">
+<table class="meta"><tr><td>Şube</td><td>${ns(g.sube)}</td></tr><tr><td>Tarih</td><td>${ns(g.tarih)}</td></tr><tr><td>Saat</td><td>${ns(g.bas)} – ${ns(g.bitis)}</td></tr><tr><td>Denetçi</td><td>${ns(g.denetci)}</td></tr></table>
+<div class="sb"><div class="n">${score}</div><div>/100 Puan</div><div class="lb">${slbl(score).replace(/[✅⚠️🔴] /,'')}</div></div>
+<div class="sec">RAF & PLANOGRAM</div>${row('Planogram',fd.raf.planogram)}${row('Marka Blok',fd.raf.marka)}${row('Doluluk',fd.raf.doluluk)}${row('FIFO',fd.raf.fifo)}${fd.raf.notlar?`<div class="note">${fd.raf.notlar}</div>`:''}${pgrid(fd.raf.photos)}
+<div class="sec">SKT KONTROLÜ</div>${row('SKT Geçmiş',fd.skt.sktVar)}${row('Yakın SKT',fd.skt.yakinVar)}${row('FIFO',fd.skt.fifo)}${sktRows?`<div class="rbox"><h4>🔴 SKT Sorunlu Ürünler</h4><table class="dt"><tr><th>Barkod</th><th>Ürün</th><th>SKT</th><th>Miktar</th><th>Alan</th></tr>${sktRows}</table></div>`:''}${fd.skt.notlar?`<div class="note">${fd.skt.notlar}</div>`:''}${pgrid(fd.skt.photos)}
+<div class="sec">FİYAT & ETİKET</div>${row('Doğruluk',fd.etiket.dogruluk)}${row('Kampanya',fd.etiket.kampanya)}<div class="row"><span class="lbl">Eksik Etiket</span><span>${fd.etiket.eksik||'0'} adet</span></div><div class="row"><span class="lbl">Yanlış Fiyat</span><span>${fd.etiket.yanlis||'0'} adet</span></div>${fd.etiket.notlar?`<div class="note">${fd.etiket.notlar}</div>`:''}${pgrid(fd.etiket.photos)}
+<div class="sec">DEPO DÜZENİ</div>${row('Genel',fd.depo.genel)}${row('FIFO',fd.depo.fifo)}${row('Transfer',fd.depo.transfer)}${row('İade Köşesi',fd.depo.iade)}${row('Soğuk Zincir',fd.depo.soguk)}${fd.depo.notlar?`<div class="note">${fd.depo.notlar}</div>`:''}${pgrid(fd.depo.photos)}
+<div class="sec">PERSONEL & HİJYEN</div>${row('Üniforma',fd.personel.unifroma)}${row('Hijyen',fd.personel.hijyen)}${row('Görev',fd.personel.gorev)}${row('Müşteri',fd.personel.musteri)}${fd.personel.notlar?`<div class="note">${fd.personel.notlar}</div>`:''}${pgrid(fd.personel.photos)}
+<div class="sec">İADE YÖNETİMİ</div>${row('Bekleyen',fd.iade.var)}${fd.iade.var==='Evet'?`${row('Adet',fd.iade.adet)}${row('Firmalar',fd.iade.firma)}${row('Bekleme',fd.iade.sure+' gün')}`:''}${fd.iade.notlar?`<div class="note">${fd.iade.notlar}</div>`:''}${pgrid(fd.iade.photos)}
+${fd.degerl.kritik?`<div class="rbox" style="margin-top:14px"><h4>🔴 Kritik Bulgular</h4><p style="white-space:pre-wrap;font-size:12px;margin-top:5px">${fd.degerl.kritik}</p></div>`:''}
+${fd.degerl.yeni?`<div class="sec" style="background:#1B3A6B">AKSİYON PLANI</div><p style="white-space:pre-wrap;font-size:12px;padding:6px 0">${fd.degerl.yeni}</p>`:''}
+${fd.degerl.genel?`<div class="note" style="margin-top:10px">${fd.degerl.genel}</div>`:''}${pgrid(fd.degerl.photos)}
+<div class="sig"><div style="font-weight:700;color:#1B3A6B;font-size:13px">${ns(g.denetci)}</div><div style="color:#666;font-size:11px">Operasyon Müdürü | Bizim Pazar Gıda A.Ş.</div></div>
+</div></body></html>`;
+}
+
+/* ── Ana Bileşen ── */
+function App(){
+  const [step,setStep]=useState(0);
+  const [fd,setFd]=useState(initData);
+  const [status,setStatus]=useState('');
+  const [loaded,setLoaded]=useState(false);
+  const showS=(msg,ms=2200)=>{setStatus(msg);setTimeout(()=>setStatus(''),ms);};
+  const save=useCallback((data,s)=>{
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify({fd:data,step:s}));setStatus('☁️ Kaydedildi');setTimeout(()=>setStatus(''),2000);}
+    catch(e){setStatus('⚠️ Kayıt hatası');}
+  },[]);
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(raw){const saved=JSON.parse(raw);if(saved.fd) setFd(saved.fd);if(saved.step!==undefined) setStep(saved.step);showS('☁️ Kaldığınız yerden devam ediliyor',3000);}
+    }catch(e){}
+    setLoaded(true);
+  },[]);
+  const upd=(sec,field,value)=>{const nd={...fd,[sec]:{...fd[sec],[field]:value}};setFd(nd);save(nd,step);};
+  const updP=(sec,photos)=>{const nd={...fd,[sec]:{...fd[sec],photos}};setFd(nd);save(nd,step);};
+  const goTo=ns=>{setStep(ns);save(fd,ns);};
+  const onPDF=()=>{
+    const html=buildHTML(fd,calcScore(fd));
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const w=window.open(url,'_blank');
+    if(w) w.addEventListener('load',()=>setTimeout(()=>w.print(),500));
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+  };
+  const onWord=()=>{
+    const html=buildHTML(fd,calcScore(fd));
+    const blob=new Blob(['\ufeff'+html],{type:'application/msword;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`Denetim_${(fd.genel.sube||'Sube').replace(/ /g,'_')}_${fd.genel.tarih||'tarih'}.doc`;
+    a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  };
+  const onClear=()=>{
+    if(!confirm('Formu sıfırlamak istediğinize emin misiniz?')) return;
+    localStorage.removeItem(STORAGE_KEY);setFd(initData);setStep(0);showS('🗑️ Form sıfırlandı');
+  };
+  if(!loaded) return(<div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100vh',background:NAVY,color:'white',gap:14}}><div style={{fontSize:40}}>☁️</div><div style={{fontSize:16,fontWeight:600}}>Yükleniyor...</div></div>);
+  const sections=[
+    <Sec0 fd={fd} upd={upd}/>,
+    <Sec1 fd={fd} upd={upd} updP={updP}/>,
+    <Sec2 fd={fd} setFd={setFd} save={save} step={step} updP={updP}/>,
+    <Sec3 fd={fd} upd={upd} updP={updP}/>,
+    <Sec4 fd={fd} upd={upd} updP={updP}/>,
+    <Sec5 fd={fd} upd={upd} updP={updP}/>,
+    <Sec6 fd={fd} upd={upd} updP={updP}/>,
+    <Sec7 fd={fd} upd={upd} updP={updP}/>,
+    <Sec8 fd={fd} onPDF={onPDF} onWord={onWord} onClear={onClear}/>,
+  ];
+  const progress=((step+1)/STEPS.length)*100;
+  return(
+    <div style={{fontFamily:'system-ui,-apple-system,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'}}>
+      <div style={{background:NAVY,color:'white',padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'}}>
+        <div><div style={{fontWeight:800,fontSize:15,letterSpacing:.5}}>🏪 BİZİM PAZAR</div><div style={{fontSize:11,opacity:.7,marginTop:1}}>Saha Denetim Formu</div></div>
+        <div style={{fontSize:11,color:'#90CAF9',maxWidth:160,textAlign:'right'}}>{status}</div>
+      </div>
+      <InstallBanner/>
+      <div style={{background:'#E8EEF7',padding:'10px 16px 9px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+          <span style={{fontSize:13,color:NAVY,fontWeight:700}}>{STEPS[step]}</span>
+          <span style={{fontSize:12,color:'#666'}}>{step+1}/{STEPS.length}</span>
+        </div>
+        <div style={{height:5,background:'#C9D6EA',borderRadius:3}}><div style={{height:'100%',width:`${progress}%`,background:GOLD,borderRadius:3,transition:'width 0.3s'}}/></div>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:8}}>
+          {STEPS.map((_,i)=>(
+            <button key={i} onClick={()=>goTo(i)} title={STEPS[i]} style={{width:26,height:26,borderRadius:'50%',border:'none',cursor:'pointer',background:i<step?GOLD:i===step?NAVY:'#C9D6EA',color:'white',fontSize:10,fontWeight:700,padding:0,boxShadow:i===step?'0 2px 6px rgba(27,58,107,0.4)':'none',transition:'all 0.2s'}}>{i+1}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{padding:'18px 16px 130px'}}>{sections[step]}</div>
+      <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:700,background:'white',borderTop:'1px solid #e0e0e0',padding:'10px 16px',display:'flex',gap:10,boxShadow:'0 -2px 10px rgba(0,0,0,0.08)',zIndex:99}}>
+        {step>0&&<button onClick={()=>goTo(step-1)} style={{flex:1,padding:14,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:700,fontSize:14,cursor:'pointer'}}>← Geri</button>}
+        {step<STEPS.length-1&&<button onClick={()=>goTo(step+1)} style={{flex:2,padding:14,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer',boxShadow:'0 3px 8px rgba(27,58,107,0.3)'}}>İleri →</button>}
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
