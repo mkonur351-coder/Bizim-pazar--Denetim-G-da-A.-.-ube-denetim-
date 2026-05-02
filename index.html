@@ -11,67 +11,226 @@
 <meta name="theme-color" content="#1B3A6B">
 <link rel="manifest" href="/manifest.json">
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-body{background:#F4F6FA;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;overscroll-behavior-y:contain}
-input,textarea,select,button{font-family:inherit}
-#splash{position:fixed;inset:0;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.4s}
+/* ── Reset & Base ── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#F0F2F5;color:#1a1a1a;overscroll-behavior-y:contain}
+input,textarea,select,button{font-family:inherit;font-size:16px}
+button{cursor:pointer;transition:opacity .15s,transform .1s}
+button:active{opacity:.8;transform:scale(.98)}
+
+/* ── Splash ── */
+#splash{position:fixed;inset:0;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
 #splash.hide{opacity:0;pointer-events:none}
-.fi{animation:fi 0.2s ease}
-@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-button{transition:all 0.15s;outline:none;}
-button:active{opacity:0.85;transform:scale(0.98);}
-select{-webkit-appearance:none;appearance:none;}
-input[type=date],input[type=time]{-webkit-appearance:none;}
-.login-wrap{min-height:100vh;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
-.login-box{background:white;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.25);}
-.login-title{font-size:15px;font-weight:700;color:#1B3A6B;margin-bottom:16px;}
-.login-label{font-size:13px;font-weight:600;color:#444;margin-bottom:8px;}
-.user-btn{padding:12px 14px;border-radius:10px;border:2px solid #e0e0e0;background:white;color:#555;font-size:14px;cursor:pointer;font-weight:400;text-align:left;width:100%;margin-bottom:7px;display:block;}
-.user-btn.active-admin{border-color:#E8A020;background:#FFF8E7;color:#E8A020;font-weight:700;}
-.user-btn.active-user{border-color:#1B3A6B;background:#EEF2F9;color:#1B3A6B;font-weight:700;}
-.pin-input{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:9px;font-size:18px;outline:none;letter-spacing:6px;text-align:center;display:block;}
-.login-btn{width:100%;padding:14px;background:#1B3A6B;color:white;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;}
-.login-footer{color:rgba(255,255,255,0.3);font-size:11px;margin-top:16px;text-align:center;}
-.card{background:white;border:1px solid #E0E0E0;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
-.card-accent-red{border-left:4px solid #C0212B;}
-.sec-title h2{color:#1B3A6B;font-size:19px;font-weight:800;margin:0 0 20px;}
-.form-label{font-size:13px;font-weight:600;color:#222;margin-bottom:5px;}
-.form-input{width:100%;padding:11px 12px;border:1.5px solid #ddd;border-radius:9px;font-size:14px;outline:none;background:white;}
-.form-textarea{width:100%;padding:11px 12px;border:1.5px solid #ddd;border-radius:9px;font-size:13px;outline:none;resize:vertical;background:white;}
+
+/* ── App Shell ── */
+.app{max-width:700px;margin:0 auto;min-height:100vh;background:#F0F2F5}
+
+/* ── Header ── */
+.hdr{background:#1B3A6B;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.hdr-brand{color:white;font-weight:800;font-size:15px;letter-spacing:.3px}
+.hdr-sub{color:rgba(255,255,255,.65);font-size:12px;margin-top:2px}
+.hdr-btn{background:rgba(255,255,255,.15);border:none;color:white;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600}
+.hdr-btns{display:flex;gap:8px;align-items:center}
+.hdr-status{font-size:11px;color:#90CAF9}
+
+/* ── Progress ── */
+.prog{background:white;padding:12px 16px;border-bottom:1px solid #E8ECF0}
+.prog-row{display:flex;justify-content:space-between;margin-bottom:8px}
+.prog-name{font-size:14px;color:#1B3A6B;font-weight:700}
+.prog-count{font-size:12px;color:#888}
+.prog-bar{height:6px;background:#E8ECF0;border-radius:3px;margin-bottom:10px;overflow:hidden}
+.prog-fill{height:100%;background:#1B3A6B;border-radius:3px;transition:width .3s}
+.prog-dots{display:flex;justify-content:space-between}
+.prog-dot{width:28px;height:28px;border-radius:50%;border:none;color:white;font-size:11px;font-weight:700;transition:all .2s}
+
+/* ── Content ── */
+.content{padding:16px;padding-bottom:100px}
+
+/* ── Cards ── */
+.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card-red{background:#FFF5F5;border:1.5px solid #FFCDD2;border-radius:16px;padding:20px;margin-bottom:16px}
+
+/* ── Section Title ── */
+.sec-icon{font-size:28px;margin-bottom:6px}
+.sec-title{font-size:20px;font-weight:800;color:#1B3A6B;margin-bottom:4px}
+.sec-sub{font-size:13px;color:#888;margin-bottom:20px}
+
+/* ── Form Elements ── */
+.field{margin-bottom:20px}
+.field:last-child{margin-bottom:0}
+.field-label{font-size:13px;font-weight:600;color:#555;margin-bottom:8px;display:block}
+.field-label .req{color:#E53935;margin-left:2px}
+.field-input{width:100%;padding:14px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:16px;outline:none;background:white;transition:border-color .2s}
+.field-input:focus{border-color:#1B3A6B}
+.field-textarea{width:100%;padding:14px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:15px;outline:none;resize:vertical;background:white;min-height:80px;transition:border-color .2s}
+.field-textarea:focus{border-color:#1B3A6B}
+.field-select{width:100%;padding:14px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:16px;background:white;outline:none;-webkit-appearance:none}
+.field-readonly{padding:14px 16px;background:#F5F7FA;border-radius:12px;font-size:15px;font-weight:600;color:#1B3A6B}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Radio ── */
+.radio-group{margin-bottom:20px}
+.radio-label{font-size:13px;font-weight:600;color:#555;margin-bottom:10px}
+.radio-opts{display:flex;gap:8px;flex-wrap:wrap}
+.ropt{padding:10px 16px;border-radius:24px;border:2px solid #E0E0E0;background:white;color:#555;font-size:14px;font-weight:500;transition:all .15s}
+.ropt.sel-green{background:#2E7D32;border-color:#2E7D32;color:white;font-weight:700}
+.ropt.sel-gold{background:#F57F17;border-color:#F57F17;color:white;font-weight:700}
+.ropt.sel-red{background:#C62828;border-color:#C62828;color:white;font-weight:700}
+.ropt.sel-navy{background:#1B3A6B;border-color:#1B3A6B;color:white;font-weight:700}
+
+/* ── Photos ── */
+.photos-section{padding-top:16px;border-top:1px solid #F0F0F0;margin-top:16px}
+.photos-label{font-size:13px;font-weight:600;color:#555;margin-bottom:10px}
+.photos-row{display:flex;flex-wrap:wrap;gap:10px}
+.photo-wrap{position:relative;width:80px;height:80px}
+.photo-wrap img{width:80px;height:80px;object-fit:cover;border-radius:12px;display:block}
+.photo-del{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#E53935;color:white;border:2.5px solid white;font-size:14px;line-height:1;padding:0;font-weight:700}
+.photo-add{width:80px;height:80px;border-radius:12px;border:2px dashed #1B3A6B;background:#EEF2F9;color:#1B3A6B;font-size:26px;display:flex;align-items:center;justify-content:center}
+
+/* ── SKT Box ── */
+.skt-box{background:#FFF5F5;border:1.5px solid #FFCDD2;border-radius:16px;padding:16px;margin-bottom:16px}
+.skt-box-title{font-weight:700;color:#C62828;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.skt-form{background:white;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.skt-brow{display:flex;gap:8px;margin-bottom:12px}
+.skt-inp{width:100%;padding:12px 14px;border:1.5px solid #E0E0E0;border-radius:10px;font-size:15px;outline:none}
+.skt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.skt-field{}
+.skt-flabel{font-size:12px;color:#888;margin-bottom:5px;font-weight:500}
+.tara-btn{padding:12px 14px;background:#1B3A6B;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.skt-add-btn{width:100%;padding:14px;background:#C62828;color:white;border:none;border-radius:10px;font-weight:700;font-size:15px}
+.skt-empty{text-align:center;color:#aaa;font-size:14px;padding:12px 0}
+.skt-item{background:white;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.skt-item-name{font-weight:700;font-size:14px;color:#1a1a1a}
+.skt-item-gram{font-size:12px;color:#888;margin-left:4px;font-weight:400}
+.skt-item-info{font-size:12px;color:#888;margin-top:3px}
+.skt-del{background:none;border:none;color:#C62828;font-size:24px;line-height:1;padding:4px;flex-shrink:0}
+
+/* ── Score Box ── */
+.score-box{border-radius:20px;padding:28px 20px;text-align:center;margin-bottom:20px}
+.score-num{font-size:64px;font-weight:800;color:white;line-height:1}
+.score-sub{font-size:14px;color:rgba(255,255,255,.75);margin:4px 0 8px}
+.score-lbl{font-size:16px;font-weight:700;color:white}
+
+/* ── Rapor Summary ── */
+.summary-card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #F5F5F5}
+.summary-row:last-child{border-bottom:none}
+.summary-key{font-size:14px;color:#444}
+.summary-val{font-size:13px;font-weight:700}
+.badge-green{color:#2E7D32}
+.badge-gold{color:#F57F17}
+.badge-red{color:#C62828}
+.badge-grey{color:#aaa}
+
+/* ── Action Buttons ── */
+.action-btns{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.btn-submit{padding:18px;background:#2E7D32;color:white;border:none;border-radius:14px;font-weight:700;font-size:17px;width:100%}
+.btn-submit.disabled{background:#aaa}
+.btn-success{padding:18px;background:#E8F5E9;border:1.5px solid #2E7D32;border-radius:14px;font-weight:700;font-size:16px;color:#2E7D32;width:100%}
+.btn-pdf{padding:16px;background:#C62828;color:white;border:none;border-radius:14px;font-weight:700;font-size:16px;width:100%}
+.btn-word{padding:16px;background:#1B3A6B;color:white;border:none;border-radius:14px;font-weight:700;font-size:16px;width:100%}
+
+/* ── Nav ── */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:700px;background:white;border-top:1px solid #E8ECF0;padding:12px 16px;display:flex;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.08);z-index:99}
+.nav-back{flex:1;padding:16px;background:#F0F2F5;color:#1B3A6B;border:none;border-radius:12px;font-weight:700;font-size:15px}
+.nav-next{flex:2;padding:16px;background:#1B3A6B;color:white;border:none;border-radius:12px;font-weight:700;font-size:16px}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.login-hero{text-align:center;margin-bottom:28px}
+.login-icon{font-size:56px;margin-bottom:12px}
+.login-brand{color:white;font-size:24px;font-weight:800;letter-spacing:.5px}
+.login-tagline{color:rgba(255,255,255,.6);font-size:13px;margin-top:4px}
+.login-box{background:white;border-radius:24px;padding:28px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.login-title{font-size:18px;font-weight:700;color:#1B3A6B;margin-bottom:16px}
+.login-label{font-size:13px;font-weight:600;color:#666;margin-bottom:10px}
+.user-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.user-btn{padding:14px 16px;border-radius:12px;border:2px solid #E8ECF0;background:white;color:#444;font-size:15px;text-align:left;width:100%;font-weight:500;transition:all .15s}
+.user-btn.sel-admin{border-color:#F57F17;background:#FFF8E7;color:#E65100;font-weight:700}
+.user-btn.sel-user{border-color:#1B3A6B;background:#EEF2F9;color:#1B3A6B;font-weight:700}
+.pin-wrap{margin-bottom:20px}
+.pin-label{font-size:13px;font-weight:600;color:#666;margin-bottom:8px}
+.pin-input{width:100%;padding:16px;border:2px solid #E0E0E0;border-radius:12px;font-size:20px;outline:none;letter-spacing:8px;text-align:center;transition:border-color .2s}
+.pin-input:focus{border-color:#1B3A6B}
+.pin-err{color:#C62828;font-size:13px;text-align:center;margin-bottom:12px}
+.login-btn{width:100%;padding:16px;background:#1B3A6B;color:white;border:none;border-radius:12px;font-weight:700;font-size:16px}
+.login-footer{color:rgba(255,255,255,.3);font-size:12px;margin-top:20px;text-align:center}
+
+/* ── Admin ── */
+.admin-wrap{max-width:700px;margin:0 auto;background:#F0F2F5;min-height:100vh}
+.admin-hdr{background:#1B3A6B;color:white;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.admin-body{padding:16px;padding-bottom:32px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:white;border-radius:16px;padding:16px 12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stat-icon{font-size:22px;margin-bottom:4px}
+.stat-num{font-size:26px;font-weight:800;line-height:1.2}
+.stat-lbl{font-size:11px;color:#666;margin-top:2px}
+.sube-table{background:white;border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sube-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5}
+.sube-row:last-child{border-bottom:none}
+.sube-name{flex:1;font-size:14px}
+.sube-cnt{font-size:12px;color:#aaa;margin-right:10px}
+.sube-badge{border-radius:8px;padding:4px 12px;font-size:13px;font-weight:700;color:white;min-width:40px;text-align:center}
+.filter-select{width:100%;padding:13px 16px;border:1.5px solid #E0E0E0;border-radius:12px;font-size:15px;background:white;outline:none;margin-bottom:14px;-webkit-appearance:none}
+.section-hdr{font-weight:700;color:#1B3A6B;font-size:15px;margin-bottom:12px}
+.denetim-card{width:100%;background:white;border:none;border-radius:14px;padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.08);text-align:left}
+.denetim-sube{font-weight:700;font-size:15px;color:#1B3A6B}
+.denetim-info{font-size:12px;color:#888;margin-top:3px}
+.denetim-warn{font-size:12px;color:#C62828;margin-top:3px}
+.score-badge{text-align:center;border-radius:12px;padding:10px 14px;min-width:60px;color:white}
+.score-badge-num{font-size:24px;font-weight:800;line-height:1;display:block}
+.score-badge-sub{font-size:11px;opacity:.85}
+.refresh-btn{width:100%;padding:14px;background:#EEF2F9;color:#1B3A6B;border:none;border-radius:12px;font-weight:700;font-size:14px;margin-top:8px}
+
+/* ── Detail ── */
+.detail-hdr{background:#1B3A6B;color:white;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.back-btn{background:none;border:none;color:white;font-size:26px;padding:0;line-height:1}
+.detail-title{font-weight:800;font-size:16px}
+.detail-sub{font-size:12px;opacity:.7;margin-top:1px}
+
+/* ── Scanner ── */
+.scanner-wrap{position:fixed;inset:0;background:rgba(10,10,10,.96);z-index:2000;display:flex;flex-direction:column}
+.scanner-hdr{background:#1B3A6B;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.scanner-title{color:white;font-weight:700;font-size:17px}
+.scanner-close{background:none;border:none;color:white;font-size:30px;line-height:1;padding:0}
+.scanner-body{flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.scanner-info{background:rgba(255,255,255,.08);border-radius:14px;padding:20px;color:rgba(255,255,255,.7);font-size:14px;line-height:1.8}
+.scanner-info strong{color:white;display:block;margin-bottom:6px;font-size:16px}
+.scan-btn{padding:20px;background:#E8A020;color:white;border:none;border-radius:14px;font-weight:700;font-size:18px;width:100%}
+.scanner-or{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.3);font-size:13px}
+.scanner-or-line{flex:1;height:1px;background:rgba(255,255,255,.12)}
+.manual-row{display:flex;gap:10px}
+.manual-inp{flex:1;padding:14px;border:none;border-radius:12px;font-size:16px;outline:none;background:white}
+.manual-btn{padding:14px 20px;background:#E8A020;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px}
+
+/* ── Animations ── */
+.fade-in{animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 
-<!-- Splash -->
 <div id="splash">
-  <div style="font-size:56px;margin-bottom:16px">🏪</div>
-  <div style="color:white;font-size:22px;font-weight:800;letter-spacing:1px">BİZİM PAZAR</div>
-  <div style="color:rgba(255,255,255,0.65);font-size:13px;margin-top:6px">Saha Denetim Sistemi</div>
-  <div id="sp-msg" style="color:rgba(255,255,255,0.45);font-size:12px;margin-top:32px">Yükleniyor...</div>
+  <div style="font-size:60px;margin-bottom:16px">🏪</div>
+  <div style="color:white;font-size:22px;font-weight:800;letter-spacing:.5px">BİZİM PAZAR</div>
+  <div style="color:rgba(255,255,255,.55);font-size:13px;margin-top:6px">Saha Denetim Sistemi</div>
 </div>
 
 <div id="app"></div>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",authDomain:"bizim-pazar-denetim.firebaseapp.com",projectId:"bizim-pazar-denetim",storageBucket:"bizim-pazar-denetim.firebasestorage.app",messagingSenderId:"1029710020793",appId:"1:1029710020793:web:6533143105c1659a981b68"};
-try{
-  const app=initializeApp(cfg);
-  window._db=getFirestore(app);
-  window._fc={collection,addDoc,getDocs,query,orderBy,where,serverTimestamp};
-  window._fbOk=true;
-}catch(e){window._fbOk=false;}
+try{const app=initializeApp(cfg);window._db=getFirestore(app);window._fc={collection,addDoc,getDocs,query,orderBy,where,serverTimestamp};window._fbOk=true;}
+catch(e){window._fbOk=false;}
 window.dispatchEvent(new Event('fb-ready'));
 </script>
 
-<!-- App (Vanilla JS - no Babel needed) -->
 <script>
-// ── Constants ──────────────────────────────────────────────────────
-const NAVY='#1B3A6B',RED='#C0212B',GOLD='#E8A020',GREEN='#2E7D32';
-const LKEY='bp-v4';
+const NAVY='#1B3A6B',RED='#C62828',GOLD='#F57F17',GREEN='#2E7D32';
+const LKEY='bp-v5';
 const BRANCHES=['Adliye Şubesi','Adana Yolu Şubesi','Cengiz Topel Şubesi','Andırın Caddesi Şubesi','Osmaniye Yolu Şubesi','Merkez Depo'];
 const STEPS=['Genel','Raf','SKT','Etiket','Depo','Personel','İade','Değerl.','Rapor'];
 const USERS=[
@@ -84,42 +243,30 @@ const USERS=[
   {id:'depo',name:'Merkez Depo',role:'personel',pin:'1006',sube:'Merkez Depo',label:'🏭 Merkez Depo'},
 ];
 
-// ── State Management ───────────────────────────────────────────────
-let state = {
-  view: 'login', // login | form | admin | detail
-  user: null,
-  step: 0,
-  fd: null,
-  status: '',
-  statusTimer: null,
-  denetimler: [],
-  selDenetim: null,
-  loginSel: null,
-  loginPin: '',
-  loginErr: '',
-  adminFilt: '',
-  submitting: false,
-  submitted: false,
-  scannerOpen: false,
-  scannerFor: null,
-  sktItem: {barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''},
-  fbReady: false,
+// ── State ──────────────────────────────────────────────────────────
+let S={
+  view:'login',user:null,step:0,fd:null,
+  status:'',statusTimer:null,
+  denetimler:[],selD:null,
+  loginSel:null,loginPin:'',loginErr:'',
+  adminFilt:'',
+  submitting:false,submitted:false,
+  scanOpen:false,
+  sktItem:{barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''},
 };
 
-function mkFd(user) {
-  return {
-    genel:{sube:user?.sube||'',tarih:new Date().toISOString().split('T')[0],bas:'',bitis:'',denetci:user?.name||''},
-    raf:{planogram:'',marka:'',doluluk:'',fifo:'',notlar:'',photos:[]},
-    skt:{sktVar:'',yakinVar:'',fifo:'',liste:[],notlar:'',photos:[]},
-    etiket:{dogruluk:'',kampanya:'',eksik:'',yanlis:'',notlar:'',photos:[]},
-    depo:{genel:'',fifo:'',transfer:'',iade:'',soguk:'',notlar:'',photos:[]},
-    personel:{unifroma:'',hijyen:'',gorev:'',musteri:'',notlar:'',photos:[]},
-    iade:{var:'',adet:'',firma:'',sure:'',notlar:'',photos:[]},
-    degerl:{kritik:'',onceki:'',yeni:'',genel:'',photos:[]},
-  };
-}
+function mkFd(u){return{
+  genel:{sube:u?.sube||'',tarih:new Date().toISOString().split('T')[0],bas:'',bitis:'',denetci:''},
+  raf:{planogram:'',marka:'',doluluk:'',fifo:'',notlar:'',photos:[]},
+  skt:{sktVar:'',yakinVar:'',fifo:'',liste:[],notlar:'',photos:[]},
+  etiket:{dogruluk:'',kampanya:'',eksik:'',yanlis:'',notlar:'',photos:[]},
+  depo:{genel:'',fifo:'',transfer:'',iade:'',soguk:'',notlar:'',photos:[]},
+  personel:{unifroma:'',hijyen:'',gorev:'',musteri:'',notlar:'',photos:[]},
+  iade:{var:'',adet:'',firma:'',sure:'',notlar:'',photos:[]},
+  degerl:{kritik:'',onceki:'',yeni:'',genel:'',photos:[]},
+};}
 
-function calcScore(fd) {
+function calcScore(fd){
   const v=(val,g,m=[])=>val===''||val===undefined?null:g.includes(val)?1:m.includes(val)?0.6:0;
   const avg=a=>{const f=a.filter(x=>x!==null);return f.length?f.reduce((a,b)=>a+b,0)/f.length:0.7};
   return Math.round(
@@ -134,678 +281,166 @@ function calcScore(fd) {
 const sco=s=>s>=80?GREEN:s>=60?GOLD:RED;
 const slbl=s=>s>=80?'✅ BAŞARILI':s>=60?'⚠️ GELİŞTİRİLMELİ':'🔴 KRİTİK';
 
-function showStatus(msg,ms=2200){
-  state.status=msg;
-  if(state.statusTimer) clearTimeout(state.statusTimer);
-  state.statusTimer=setTimeout(()=>{state.status='';render();},ms);
-  render();
+function compress(file){return new Promise(r=>{const rd=new FileReader();rd.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=900,sc=Math.min(1,M/Math.max(img.width,img.height));c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext('2d').drawImage(img,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',0.65));};img.src=e.target.result;};rd.readAsDataURL(file);});}
+
+async function fbSave(data){if(!window._fbOk)return null;try{const{collection,addDoc,serverTimestamp}=window._fc;const ref=await addDoc(collection(window._db,'denetimler'),{...data,ts:serverTimestamp(),ca:new Date().toISOString()});return ref.id;}catch(e){return null;}}
+async function fbGet(sube=null){if(!window._fbOk)return[];try{const{collection,getDocs,query,orderBy,where}=window._fc;const q=sube?query(collection(window._db,'denetimler'),where('sube','==',sube),orderBy('ca','desc')):query(collection(window._db,'denetimler'),orderBy('ca','desc'));const snap=await getDocs(q);return snap.docs.map(d=>({id:d.id,...d.data()}));}catch(e){return[];}}
+
+function showStatus(msg,ms=2200){S.status=msg;if(S.statusTimer)clearTimeout(S.statusTimer);S.statusTimer=setTimeout(()=>{S.status='';render();},ms);render();}
+function saveFd(){try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}showStatus('☁️ Kaydedildi');}
+function upd(sec,f,v){S.fd[sec][f]=v;saveFd();}
+function updP(sec,p){S.fd[sec].photos=p;saveFd();}
+function goTo(ns){S.step=ns;saveFd();}
+
+// ── DOM Helpers ────────────────────────────────────────────────────
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+function on(el,ev,fn){el.addEventListener(ev,fn);return el;}
+
+// ── Components ─────────────────────────────────────────────────────
+function field(label,inputEl,req=false){
+  const w=el('div','field');
+  const l=el('label','field-label',label);
+  if(req){const s=el('span','req','*');l.appendChild(s);}
+  w.appendChild(l);w.appendChild(inputEl);
+  return w;
 }
 
-function saveFd(){
-  try{localStorage.setItem(LKEY,JSON.stringify({fd:state.fd,step:state.step}));}catch(e){}
-  showStatus('☁️ Kaydedildi');
+function textInp(val,onChange,opts={}){
+  const inp=el('input');
+  inp.type=opts.type||'text';inp.value=val||'';inp.placeholder=opts.placeholder||'';
+  inp.className='field-input';
+  on(inp,'input',e=>onChange(e.target.value));
+  return inp;
 }
 
-function compress(file){
-  return new Promise(r=>{
-    const rd=new FileReader();
-    rd.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const c=document.createElement('canvas');
-        const M=900,s=Math.min(1,M/Math.max(img.width,img.height));
-        c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
-        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        r(c.toDataURL('image/jpeg',0.65));
-      };
-      img.src=e.target.result;
-    };
-    rd.readAsDataURL(file);
-  });
+function taInp(val,onChange,opts={}){
+  const ta=el('textarea');
+  ta.value=val||'';ta.placeholder=opts.placeholder||'';ta.rows=opts.rows||3;
+  ta.className='field-textarea';
+  on(ta,'input',e=>onChange(e.target.value));
+  return ta;
 }
 
-async function fbSave(data){
-  if(!window._fbOk) return null;
-  try{
-    const{collection,addDoc,serverTimestamp}=window._fc;
-    const ref=await addDoc(collection(window._db,'denetimler'),{...data,ts:serverTimestamp(),ca:new Date().toISOString()});
-    return ref.id;
-  }catch(e){console.error(e);return null;}
-}
-
-async function fbGet(sube=null){
-  if(!window._fbOk) return[];
-  try{
-    const{collection,getDocs,query,orderBy,where}=window._fc;
-    const q=sube
-      ?query(collection(window._db,'denetimler'),where('sube','==',sube),orderBy('ca','desc'))
-      :query(collection(window._db,'denetimler'),orderBy('ca','desc'));
-    const snap=await getDocs(q);
-    return snap.docs.map(d=>({id:d.id,...d.data()}));
-  }catch(e){console.error(e);return[];}
-}
-
-// ── HTML Helpers ───────────────────────────────────────────────────
-const h = (tag, attrs={}, ...children) => {
-  const el = document.createElement(tag);
-  for (const [k,v] of Object.entries(attrs)) {
-    if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
-    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
-    else if (k === 'className') el.className = v;
-    else el.setAttribute(k, v);
-  }
-  for (const c of children) {
-    if (c === null || c === undefined) continue;
-    if (typeof c === 'string' || typeof c === 'number') el.appendChild(document.createTextNode(String(c)));
-    else if (c instanceof Node) el.appendChild(c);
-    else if (Array.isArray(c)) c.forEach(x => x && el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
-  }
-  return el;
-};
-
-function div(style, ...children) { return h('div', {style}, ...children); }
-function btn(style, onClick, ...children) { return h('button', {style, onClick}, ...children); }
-
-// ── UI Components ──────────────────────────────────────────────────
-function card(children, extra={}) {
-  return div({background:'#fff',border:'1px solid #E0E0E0',borderLeft:extra.accent?`4px solid ${extra.accent}`:undefined,borderRadius:12,padding:16,marginBottom:14,boxShadow:'0 1px 4px rgba(0,0,0,0.06)',...(extra.style||{})}, ...children);
-}
-
-function radio(label, opts, value, onChange, req=false) {
-  const container = div({marginBottom:18});
-  const lbl = div({fontSize:13,fontWeight:600,color:'#222',marginBottom:8}, label);
-  if(req) lbl.appendChild(h('span',{style:{color:RED}},' *'));
-  const row = div({display:'flex',gap:8,flexWrap:'wrap'});
+function radioGroup(label,opts,val,onChange,req=false){
+  const w=el('div','radio-group');
+  const l=el('div','radio-label',label);
+  if(req){const s=el('span','req',' *');l.appendChild(s);}
+  const row=el('div','radio-opts');
   opts.forEach(o=>{
-    const b = btn({
-      padding:'9px 14px',borderRadius:22,
-      border:`2px solid ${value===o.v?o.c||NAVY:'#ddd'}`,
-      background:value===o.v?o.c||NAVY:'white',
-      color:value===o.v?'white':'#333',
-      fontSize:13,cursor:'pointer',fontWeight:value===o.v?700:400
-    }, ()=>onChange(o.v), o.l);
+    const b=el('button','ropt',o.l);
+    if(val===o.v){
+      if(o.c===GREEN)b.classList.add('sel-green');
+      else if(o.c===GOLD)b.classList.add('sel-gold');
+      else if(o.c===RED)b.classList.add('sel-red');
+      else b.classList.add('sel-navy');
+    }
+    on(b,'click',()=>onChange(o.v));
     row.appendChild(b);
   });
-  container.appendChild(lbl);
-  container.appendChild(row);
-  return container;
+  w.appendChild(l);w.appendChild(row);
+  return w;
 }
 
-function textInput(label, value, onChange, opts={}) {
-  const wrap = div({marginBottom:14,flex:opts.half?1:undefined});
-  if(label) wrap.appendChild(div({fontSize:13,fontWeight:600,color:'#222',marginBottom:5}, label));
-  const inp = h('input', {
-    type:opts.type||'text',
-    value:value||'',
-    placeholder:opts.placeholder||'',
-    style:{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,outline:'none',background:'white'}
-  });
-  inp.addEventListener('input', e=>onChange(e.target.value));
-  wrap.appendChild(inp);
-  return wrap;
-}
-
-function textarea(label, value, onChange, opts={}) {
-  const wrap = div({marginBottom:14});
-  if(label) wrap.appendChild(div({fontSize:13,fontWeight:600,color:'#222',marginBottom:5}, label));
-  const ta = h('textarea', {
-    placeholder:opts.placeholder||'',
-    rows:opts.rows||3,
-    style:{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:13,outline:'none',resize:'vertical',background:'white'}
-  });
-  ta.value = value||'';
-  ta.addEventListener('input', e=>onChange(e.target.value));
-  wrap.appendChild(ta);
-  return wrap;
-}
-
-function photoPicker(photos, onChange) {
-  const wrap = div({marginTop:16,paddingTop:14,borderTop:'1px solid #eee'});
-  wrap.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:10},'📸 Fotoğraflar'));
-  const row = div({display:'flex',flexWrap:'wrap',gap:9});
+function photoPicker(photos,onChange){
+  const w=el('div','photos-section');
+  w.appendChild(el('div','photos-label','📸 Fotoğraflar'));
+  const row=el('div','photos-row');
   photos.forEach(p=>{
-    const pw = div({position:'relative'});
-    const img = h('img',{src:p.data,style:{width:80,height:80,objectFit:'cover',borderRadius:10,border:'1px solid #ddd',display:'block'}});
-    const del = btn({position:'absolute',top:-7,right:-7,width:22,height:22,borderRadius:'50%',background:RED,color:'white',border:'2px solid white',fontSize:13,cursor:'pointer',lineHeight:1,padding:0,fontWeight:700},
-      ()=>onChange(photos.filter(x=>x.id!==p.id)), '×');
-    pw.appendChild(img); pw.appendChild(del);
-    row.appendChild(pw);
+    const pw=el('div','photo-wrap');
+    const img=document.createElement('img');img.src=p.data;
+    const del=el('button','photo-del','×');
+    on(del,'click',()=>onChange(photos.filter(x=>x.id!==p.id)));
+    pw.appendChild(img);pw.appendChild(del);row.appendChild(pw);
   });
-  const inp = h('input',{type:'file',accept:'image/*',capture:'environment',style:{display:'none'}});
-  inp.addEventListener('change', async e=>{
-    const f=e.target.files[0]; if(!f) return;
-    const data=await compress(f);
-    onChange([...photos,{id:Date.now(),data}]);
-    e.target.value='';
-  });
-  const addBtn = btn({width:80,height:80,borderRadius:10,border:`2px dashed ${GOLD}`,background:'#FFFBEF',color:GOLD,fontSize:28,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'},
-    ()=>inp.click(), '📷');
-  row.appendChild(addBtn);
-  wrap.appendChild(row);
-  wrap.appendChild(inp);
-  return wrap;
+  const inp=el('input');inp.type='file';inp.accept='image/*';inp.setAttribute('capture','environment');inp.style.display='none';
+  on(inp,'change',async e=>{const f=e.target.files[0];if(!f)return;const data=await compress(f);onChange([...photos,{id:Date.now(),data}]);e.target.value='';});
+  const add=el('button','photo-add','📷');on(add,'click',()=>inp.click());
+  row.appendChild(add);w.appendChild(row);w.appendChild(inp);
+  return w;
 }
 
-function secTitle(icon, title, sub) {
-  const wrap = div({marginBottom:20});
-  wrap.appendChild(h('h2',{style:{color:NAVY,fontSize:19,fontWeight:800,margin:0}}, `${icon} ${title}`));
-  if(sub) wrap.appendChild(div({color:'#666',fontSize:13,margin:'4px 0 0'}, sub));
-  return wrap;
+function card(...children){const c=el('div','card');children.forEach(ch=>{if(ch)c.appendChild(ch);});return c;}
+function cardRed(...children){const c=el('div','card-red');children.forEach(ch=>{if(ch)c.appendChild(ch);});return c;}
+
+function scoreBox(score){
+  const w=el('div','score-box');w.style.background=sco(score);
+  w.appendChild(el('div','score-num',String(score)));
+  w.appendChild(el('div','score-sub','/100 Puan'));
+  w.appendChild(el('div','score-lbl',slbl(score)));
+  return w;
 }
 
-function scoreBox(score) {
-  const sc2=sco(score);
-  return div({background:sc2,color:'white',borderRadius:14,padding:'22px 20px',textAlign:'center',marginBottom:20},
-    div({fontSize:56,fontWeight:800,lineHeight:1}, String(score)),
-    div({fontSize:14,opacity:.85,margin:'4px 0'}, '/100 Puan'),
-    div({fontSize:15,fontWeight:700}, slbl(score))
-  );
+function twoCol(...children){
+  const w=el('div','two-col');
+  children.forEach(c=>{if(c)w.appendChild(c);});
+  return w;
 }
 
-// ── Report Builder ─────────────────────────────────────────────────
-function buildRpt(fd,score){
-  const ns=v=>v||'-',g=fd.genel,sc2=sco(score);
-  const sktR=(fd.skt.liste||[]).map(it=>`<tr><td>${ns(it.barkod)}</td><td><b>${it.urun}</b>${it.gramaj?` <small>${it.gramaj}</small>`:''}</td><td>${ns(it.skt)}</td><td>${ns(it.miktar)}</td><td>${ns(it.alan)}</td></tr>`).join('');
-  const row=(l,v)=>v?`<div class="row"><span class="lbl">${l}</span><span>${v}</span></div>`:'';
-  const pg=(ph=[])=>ph.length>0?`<div class="ph"><div class="pl">📸 Fotoğraflar:</div><div class="pg">${ph.slice(0,6).map(p=>`<img src="${p.data}">`).join('')}</div></div>`:'';
-  return`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Saha Denetim Raporu</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a1a}.hdr{background:#1B3A6B;color:white;padding:18px 24px;text-align:center}.hdr h1{font-size:18px;font-weight:800}.body{padding:20px 24px}.sb{display:inline-block;background:${sc2};color:white;border-radius:10px;padding:14px 20px;text-align:center;margin:14px 0}.sb .n{font-size:40px;font-weight:800;line-height:1}.sb .lb{font-size:13px;font-weight:700;margin-top:5px}table.m{width:100%;border-collapse:collapse;margin:12px 0}table.m td{border:1px solid #ddd;padding:7px 10px}table.m td:first-child{background:#E8EEF7;font-weight:600;width:38%}.sec{background:#E8A020;color:white;padding:7px 12px;font-weight:700;font-size:12px;margin:14px 0 7px;border-radius:5px}.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.lbl{color:#555}.note{background:#F0F4FA;border-left:3px solid #1B3A6B;padding:7px 10px;font-size:11px;color:#444;margin:6px 0}.rb{background:#FDECEA;border:1px solid #C0212B;border-radius:7px;padding:12px;margin:10px 0}.rb h4{color:#C0212B;margin-bottom:8px}table.dt{width:100%;border-collapse:collapse;font-size:11px}table.dt th{background:#C0212B;color:white;padding:5px 8px;text-align:left}table.dt td{border:1px solid #ddd;padding:5px 8px}.ph{margin:10px 0}.pl{font-weight:600;font-size:11px;margin-bottom:7px}.pg{display:flex;flex-wrap:wrap;gap:7px}.pg img{width:150px;height:113px;object-fit:cover;border-radius:6px;border:1px solid #ddd}.sig{margin-top:36px;border-top:2px solid #1B3A6B;padding-top:14px}@media print{body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="hdr"><h1>BİZİM PAZAR GIDA A.Ş.</h1><p>Saha Denetim Raporu</p></div><div class="body"><table class="m"><tr><td>Şube</td><td>${ns(g.sube)}</td></tr><tr><td>Tarih</td><td>${ns(g.tarih)}</td></tr><tr><td>Saat</td><td>${ns(g.bas)} – ${ns(g.bitis)}</td></tr><tr><td>Denetçi</td><td>${ns(g.denetci)}</td></tr></table><div class="sb"><div class="n">${score}</div><div>/100</div><div class="lb">${slbl(score).replace(/[✅⚠️🔴] /,'')}</div></div>${renderSections(fd,row,sktR,pg)}<div class="sig"><div style="font-weight:700;color:#1B3A6B;font-size:13px">${ns(g.denetci)}</div><div style="color:#666;font-size:11px">Operasyon Müdürü | Bizim Pazar Gıda A.Ş.</div></div></div></body></html>`;
-}
-
-function renderSections(fd,row,sktR,pg){
-  return `<div class="sec">RAF & PLANOGRAM</div>${row('Planogram',fd.raf.planogram)}${row('Marka Blok',fd.raf.marka)}${row('Doluluk',fd.raf.doluluk)}${row('FIFO',fd.raf.fifo)}${fd.raf.notlar?`<div class="note">${fd.raf.notlar}</div>`:''}${pg(fd.raf.photos)}<div class="sec">SKT KONTROLÜ</div>${row('SKT Geçmiş',fd.skt.sktVar)}${row('Yakın SKT',fd.skt.yakinVar)}${row('FIFO',fd.skt.fifo)}${sktR?`<div class="rb"><h4>🔴 SKT Sorunlu Ürünler</h4><table class="dt"><tr><th>Barkod</th><th>Ürün</th><th>SKT</th><th>Miktar</th><th>Alan</th></tr>${sktR}</table></div>`:''}${fd.skt.notlar?`<div class="note">${fd.skt.notlar}</div>`:''}${pg(fd.skt.photos)}<div class="sec">FİYAT & ETİKET</div>${row('Doğruluk',fd.etiket.dogruluk)}${row('Kampanya',fd.etiket.kampanya)}<div class="row"><span class="lbl">Eksik Etiket</span><span>${fd.etiket.eksik||'0'} adet</span></div><div class="row"><span class="lbl">Yanlış Fiyat</span><span>${fd.etiket.yanlis||'0'} adet</span></div>${fd.etiket.notlar?`<div class="note">${fd.etiket.notlar}</div>`:''}${pg(fd.etiket.photos)}<div class="sec">DEPO DÜZENİ</div>${row('Genel',fd.depo.genel)}${row('FIFO',fd.depo.fifo)}${row('Transfer',fd.depo.transfer)}${row('İade Köşesi',fd.depo.iade)}${row('Soğuk Zincir',fd.depo.soguk)}${fd.depo.notlar?`<div class="note">${fd.depo.notlar}</div>`:''}${pg(fd.depo.photos)}<div class="sec">PERSONEL & HİJYEN</div>${row('Üniforma',fd.personel.unifroma)}${row('Hijyen',fd.personel.hijyen)}${row('Görev',fd.personel.gorev)}${row('Müşteri',fd.personel.musteri)}${fd.personel.notlar?`<div class="note">${fd.personel.notlar}</div>`:''}${pg(fd.personel.photos)}<div class="sec">İADE YÖNETİMİ</div>${row('Bekleyen',fd.iade.var)}${fd.iade.var==='Evet'?`${row('Adet',fd.iade.adet)}${row('Firmalar',fd.iade.firma)}${row('Bekleme',fd.iade.sure+' gün')}`:''}${fd.iade.notlar?`<div class="note">${fd.iade.notlar}</div>`:''}${pg(fd.iade.photos)}${fd.degerl.kritik?`<div class="rb" style="margin-top:14px"><h4>🔴 Kritik Bulgular</h4><p style="white-space:pre-wrap;font-size:12px;margin-top:5px">${fd.degerl.kritik}</p></div>`:''}${fd.degerl.yeni?`<div class="sec" style="background:#1B3A6B">AKSİYON PLANI</div><p style="white-space:pre-wrap;font-size:12px;padding:6px 0">${fd.degerl.yeni}</p>`:''}${fd.degerl.genel?`<div class="note" style="margin-top:10px">${fd.degerl.genel}</div>`:''}${pg(fd.degerl.photos)}`;
-}
-
-// ── Views ──────────────────────────────────────────────────────────
-
-function renderLogin() {
-  const wrap = h('div',{className:'login-wrap'});
-  const hero = div({marginBottom:24,textAlign:'center'},
-    div({fontSize:52,marginBottom:8},'🏪'),
-    div({color:'white',fontSize:22,fontWeight:800},'BİZİM PAZAR'),
-    div({color:'rgba(255,255,255,0.6)',fontSize:13,marginTop:4},'Saha Denetim Sistemi')
-  );
-  const box = h('div',{className:'login-box'});
-  box.appendChild(h('div',{className:'login-title'},'Giriş Yap'));
-  box.appendChild(h('div',{className:'login-label'},'Kullanıcı'));
-  const userList = div({marginBottom:16});
-  USERS.forEach(u=>{
-    const cls = state.loginSel===u.id ? (u.role==='admin'?'user-btn active-admin':'user-btn active-user') : 'user-btn';
-    const b = h('button',{className:cls, onClick:()=>{state.loginSel=u.id;state.loginPin='';state.loginErr='';render();}}, u.label);
-    userList.appendChild(b);
-  });
-  box.appendChild(userList);
-  if(state.loginSel) {
-    const pinWrap = div({marginBottom:16});
-    pinWrap.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:8},'PIN'));
-    const pinInp = h('input',{
-      type:'password',placeholder:'••••',
-      className:'pin-input',
-      style:{borderColor:state.loginErr?RED:'#ddd'}
-    });
-    pinInp.value = state.loginPin;
-    pinInp.addEventListener('input', e=>{state.loginPin=e.target.value;});
-    pinInp.addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
-    pinWrap.appendChild(pinInp);
-    box.appendChild(pinWrap);
-  }
-  if(state.loginErr) box.appendChild(div({color:RED,fontSize:13,marginBottom:12,textAlign:'center'}, state.loginErr));
-  box.appendChild(h('button',{className:'login-btn',onClick:doLogin},'Giriş Yap →'));
-    wrap.appendChild(hero);
-  wrap.appendChild(box);
-  wrap.appendChild(h('div',{className:'login-footer'},'Bizim Pazar Gıda A.Ş.'));
-  return wrap;
-}
-
-function doLogin(){
-  if(!state.loginSel){state.loginErr='Kullanıcı seçin';render();return;}
-  const u=USERS.find(x=>x.id===state.loginSel);
-  if(u&&u.pin===state.loginPin){
-    state.user=u;state.loginErr='';
-    localStorage.setItem('bp-user',JSON.stringify(u));
-    if(u.role==='admin'){state.view='admin';loadDenetimler();}
-    else{
-      state.view='form';state.step=0;
-      try{const s=localStorage.getItem(LKEY);if(s){const p=JSON.parse(s);state.fd=p.fd||mkFd(u);state.step=p.step||0;}else state.fd=mkFd(u);}
-      catch(e){state.fd=mkFd(u);}
-    }
-    render();
-  }else{state.loginErr='❌ PIN hatalı';state.loginPin='';render();}
-}
-
-async function loadDenetimler(){
-  state.denetimler=await fbGet(state.adminFilt||null);
-  render();
-}
-
-function renderAdmin(){
-  const list=state.denetimler;
-  const bugun=new Date().toISOString().split('T')[0];
-  const today=list.filter(d=>d.tarih===bugun);
-  const crit=list.filter(d=>d.score<60);
-  const filtered=state.adminFilt?list.filter(d=>d.sube===state.adminFilt):list;
-
-  const wrap = div({fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'});
-
-  // Header
-  const hdr = div({background:NAVY,color:'white',padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'});
-  hdr.appendChild(div({},div({fontWeight:800,fontSize:15},'👑 ADMİN PANELİ'),div({fontSize:11,opacity:.7,marginTop:1},'Bizim Pazar — Tüm Şubeler')));
-  hdr.appendChild(btn({background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:8,padding:'6px 12px',fontSize:12,cursor:'pointer',fontWeight:600},doLogout,'Çıkış'));
-  wrap.appendChild(hdr);
-
-  const body = div({padding:'16px 16px 100px'});
-
-  // Stats
-  const stats = div({display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:20});
-  [[' 📋','Toplam',list.length,'denetim',NAVY],['📅','Bugün',today.length,'denetim',GREEN],['🔴','Kritik',crit.length,'<60 puan',RED]].forEach(([ic,lb,val,sub,bg])=>{
-    const c = div({background:'white',borderRadius:12,padding:'14px 10px',textAlign:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'});
-    c.appendChild(div({fontSize:20},ic));
-    c.appendChild(div({fontSize:24,fontWeight:800,color:bg,lineHeight:1.2},String(val)));
-    c.appendChild(div({fontSize:11,color:'#666',marginTop:2},lb));
-    c.appendChild(div({fontSize:10,color:'#aaa'},sub));
-    stats.appendChild(c);
-  });
-  body.appendChild(stats);
-
-  // Şube puanları
-  const spCard = div({background:'white',borderRadius:12,padding:16,marginBottom:16,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'});
-  spCard.appendChild(div({fontWeight:700,color:NAVY,fontSize:15,marginBottom:12},'📊 Şube Ortalama Puanları'));
-  BRANCHES.forEach(sube=>{
-    const sd=list.filter(d=>d.sube===sube);
-    const avg=sd.length?Math.round(sd.reduce((a,d)=>a+d.score,0)/sd.length):null;
-    const row = div({display:'flex',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f0f0f0'});
-    row.appendChild(div({flex:1,fontSize:13,color:'#333'},sube));
-    row.appendChild(div({fontSize:12,color:'#aaa',marginRight:10},`${sd.length} denetim`));
-    if(avg!==null) row.appendChild(div({background:sco(avg),color:'white',borderRadius:8,padding:'3px 10px',fontSize:13,fontWeight:700,minWidth:44,textAlign:'center'},String(avg)));
-    else row.appendChild(div({color:'#ccc',fontSize:12},'—'));
-    spCard.appendChild(row);
-  });
-  body.appendChild(spCard);
-
-  // Filter
-  const sel = h('select',{style:{width:'100%',padding:'10px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none',marginBottom:12}});
-  sel.appendChild(h('option',{value:''},'Tüm Şubeler'));
-  BRANCHES.forEach(b=>{const o=h('option',{value:b},b);if(state.adminFilt===b)o.selected=true;sel.appendChild(o);});
-  sel.addEventListener('change',e=>{state.adminFilt=e.target.value;loadDenetimler();});
-  body.appendChild(sel);
-
-  body.appendChild(div({fontWeight:700,color:NAVY,fontSize:15,marginBottom:10},`📋 Denetim Kayıtları${state.adminFilt?' — '+state.adminFilt:''}`));
-
-  if(filtered.length===0){
-    body.appendChild(div({textAlign:'center',padding:40,color:'#aaa',background:'white',borderRadius:12},'Henüz kayıt yok'));
-  } else {
-    filtered.forEach(d=>{
-      const row = btn({width:'100%',background:'white',border:'none',borderRadius:12,padding:'14px 16px',marginBottom:10,cursor:'pointer',textAlign:'left',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center'},
-        ()=>{state.selDenetim=d;state.view='detail';render();});
-      const left = div({});
-      left.appendChild(div({fontWeight:700,fontSize:14,color:NAVY},d.sube));
-      left.appendChild(div({fontSize:12,color:'#666',marginTop:3},`${d.tarih} • ${d.denetci}`));
-      if(d.kritikBulgu) left.appendChild(div({fontSize:11,color:RED,marginTop:2},'⚠️ Kritik bulgu var'));
-      const sc2=sco(d.score);
-      const badge=div({textAlign:'center',background:sc2,color:'white',borderRadius:10,padding:'8px 12px',minWidth:56});
-      badge.appendChild(div({fontSize:22,fontWeight:800,lineHeight:1},String(d.score)));
-      badge.appendChild(div({fontSize:10},'/100'));
-      row.appendChild(left);row.appendChild(badge);
-      body.appendChild(row);
-    });
-  }
-
-  body.appendChild(btn({width:'100%',padding:12,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:600,fontSize:14,cursor:'pointer',marginTop:8},loadDenetimler,'🔄 Yenile'));
-  wrap.appendChild(body);
-  return wrap;
-}
-
-function renderDetail(){
-  const d=state.selDenetim;
-  const sc2=sco(d.score);
-  const rows=[['Raf & Planogram',d.rafPlanogram],['SKT Durumu',d.sktDurum],['Fiyat & Etiket',d.etiketDurum],['Depo Düzeni',d.depoDurum],['Personel',d.personelDurum],['İade Durumu',d.iadeDurum]];
-  const vc=v=>!v||v==='—'?'#aaa':v.includes('✅')||['Tam','İyi'].includes(v)?GREEN:v.includes('⚠️')||['Kısmi','Orta'].includes(v)?GOLD:RED;
-
-  const wrap = div({fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'});
-  const hdr = div({background:NAVY,color:'white',padding:'14px 16px',display:'flex',alignItems:'center',gap:12,position:'sticky',top:0,zIndex:100});
-  hdr.appendChild(btn({background:'none',border:'none',color:'white',fontSize:24,cursor:'pointer',padding:0},()=>{state.view='admin';render();},'←'));
-  hdr.appendChild(div({},div({fontWeight:800,fontSize:15},d.sube),div({fontSize:11,opacity:.7},`${d.tarih} • ${d.denetci}`)));
-  wrap.appendChild(hdr);
-
-  const body = div({padding:'16px 16px 80px'});
-  body.appendChild(scoreBox(d.score));
-  const rc = card([]);
-  rows.forEach(([l,v],i)=>{
-    const row = div({display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'});
-    row.appendChild(div({fontSize:14,color:'#333'},l));
-    row.appendChild(div({fontSize:13,fontWeight:700,color:vc(v)},v||'—'));
-    rc.appendChild(row);
-  });
-  body.appendChild(rc);
-
-  if(d.sktListe&&d.sktListe.length>0){
-    const sc=card([],{style:{background:'#FDECEA',border:`1px solid ${RED}`}});
-    sc.appendChild(div({fontWeight:700,color:RED,marginBottom:8},`🔴 SKT Sorunlu Ürünler (${d.sktListe.length} adet)`));
-    d.sktListe.forEach((it,i)=>{
-      const row=div({fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'});
-      row.innerHTML=`<b>${it.urun}</b>${it.gramaj?` <span style="color:#888">${it.gramaj}</span>`:''} — SKT: ${it.skt||'?'} — ${it.miktar||'?'} adet`;
-      sc.appendChild(row);
-    });
-    body.appendChild(sc);
-  }
-  if(d.kritikBulgu){const c=card([],{accent:RED,style:{background:'#FDECEA',border:`1px solid ${RED}`}});c.appendChild(div({fontWeight:700,color:RED,marginBottom:6},'🔴 Kritik Bulgular'));c.appendChild(div({fontSize:13,whiteSpace:'pre-wrap'},d.kritikBulgu));body.appendChild(c);}
-  if(d.yeniAksiyonlar){const c=card([],{accent:GREEN});c.appendChild(div({fontWeight:700,color:GREEN,marginBottom:6},'✅ Aksiyon Planı'));c.appendChild(div({fontSize:13,whiteSpace:'pre-wrap'},d.yeniAksiyonlar));body.appendChild(c);}
-  wrap.appendChild(body);
-  return wrap;
-}
-
-function doLogout(){state.user=null;state.view='login';state.loginSel=null;state.loginPin='';state.loginErr='';localStorage.removeItem('bp-user');render();}
-
-// ── Form Rendering ─────────────────────────────────────────────────
-function renderForm(){
-  const fd=state.fd, user=state.user;
-  if(!fd) return div({});
-  const prog=((state.step+1)/STEPS.length)*100;
-
-  const wrap = div({fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'});
-
-  // Header
-  const hdr = div({background:NAVY,color:'white',padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'});
-  hdr.appendChild(div({},div({fontWeight:800,fontSize:14},'🏪 BİZİM PAZAR'),div({fontSize:11,opacity:.7,marginTop:1},user.sube||user.name)));
-  const btnRow = div({display:'flex',alignItems:'center',gap:8});
-  if(state.status) btnRow.appendChild(div({fontSize:10,color:'#90CAF9',maxWidth:110,textAlign:'right'},state.status));
-  btnRow.appendChild(btn({background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:7,padding:'5px 8px',fontSize:11,cursor:'pointer',fontWeight:600},newForm,'🆕'));
-  btnRow.appendChild(btn({background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:7,padding:'5px 8px',fontSize:11,cursor:'pointer',fontWeight:600},doLogout,'Çıkış'));
-  hdr.appendChild(btnRow);
-  wrap.appendChild(hdr);
-
-  // Progress
-  const prog_wrap = div({background:'#E8EEF7',padding:'9px 16px 8px'});
-  const prog_top = div({display:'flex',justifyContent:'space-between',marginBottom:4});
-  prog_top.appendChild(div({fontSize:13,color:NAVY,fontWeight:700},STEPS[state.step]));
-  prog_top.appendChild(div({fontSize:12,color:'#666'},`${state.step+1}/${STEPS.length}`));
-  prog_wrap.appendChild(prog_top);
-  const pbar = div({height:4,background:'#C9D6EA',borderRadius:3});
-  const pfill = div({height:'100%',width:`${prog}%`,background:GOLD,borderRadius:3,transition:'width 0.3s'});
-  pbar.appendChild(pfill);prog_wrap.appendChild(pbar);
-  const dots = div({display:'flex',justifyContent:'space-between',marginTop:7});
-  STEPS.forEach((_,i)=>{
-    const dot = btn({width:26,height:26,borderRadius:'50%',border:'none',cursor:'pointer',background:i<state.step?GOLD:i===state.step?NAVY:'#C9D6EA',color:'white',fontSize:10,fontWeight:700,padding:0,transition:'all 0.2s'},
-      ()=>goTo(i), String(i+1));
-    dots.appendChild(dot);
-  });
-  prog_wrap.appendChild(dots);
-  wrap.appendChild(prog_wrap);
-
-  // Content
-  const content = div({padding:'16px 16px 120px'});
-  content.appendChild(renderStep(state.step));
-  wrap.appendChild(content);
-
-  // Nav
-  const nav = div({position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:700,background:'white',borderTop:'1px solid #e0e0e0',padding:'10px 16px',display:'flex',gap:10,boxShadow:'0 -2px 10px rgba(0,0,0,0.08)',zIndex:99});
-  if(state.step>0) nav.appendChild(btn({flex:1,padding:13,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:700,fontSize:14,cursor:'pointer'},()=>goTo(state.step-1),'← Geri'));
-  if(state.step<STEPS.length-1) nav.appendChild(btn({flex:2,padding:13,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'},()=>goTo(state.step+1),'İleri →'));
-  wrap.appendChild(nav);
-  return wrap;
-}
-
-function goTo(ns){state.step=ns;saveFd();}
-
-function newForm(){
-  localStorage.removeItem(LKEY);
-  state.fd=mkFd(state.user);
-  state.step=0;state.submitted=false;
-  showStatus('🆕 Yeni form');
-}
-
-function updFd(sec,field,val){state.fd[sec][field]=val;saveFd();}
-function updP(sec,photos){state.fd[sec].photos=photos;saveFd();}
-
-function renderStep(step){
-  const fd=state.fd;
-  const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
-  const oi=[{v:'İyi',l:'✅ İyi',c:GREEN},{v:'Orta',l:'⚠️ Orta',c:GOLD},{v:'Kötü',l:'🔴 Kötü',c:RED}];
-  const wrap = div({className:'fi'});
-
-  if(step===0){
-    wrap.appendChild(secTitle('📋','Genel Bilgiler','Denetim başlangıç bilgilerini doldurun'));
-    const c=card([]);
-    c.appendChild(div({marginBottom:14},
-      div({fontSize:13,fontWeight:600,color:'#222',marginBottom:5},'Şube'),
-      state.user.sube
-        ? div({padding:'11px 12px',background:'#E8EEF7',borderRadius:9,fontSize:14,fontWeight:600,color:NAVY},state.user.sube)
-        : (()=>{
-            const sel=h('select',{style:{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none'}});
-            h('option',{value:''},'Şube seçin...').selected=true; sel.appendChild(h('option',{value:''},'Şube seçin...'));
-            BRANCHES.forEach(b=>{const o=h('option',{value:b},b);if(fd.genel.sube===b)o.selected=true;sel.appendChild(o);});
-            sel.addEventListener('change',e=>updFd('genel','sube',e.target.value));
-            return sel;
-          })()
-    ));
-    c.appendChild(textInput('Denetim Tarihi',fd.genel.tarih,v=>updFd('genel','tarih',v),{type:'date'}));
-    const tr=div({display:'flex',gap:10});
-    tr.appendChild(textInput('Başlangıç',fd.genel.bas,v=>updFd('genel','bas',v),{type:'time',half:true}));
-    tr.appendChild(textInput('Bitiş',fd.genel.bitis,v=>updFd('genel','bitis',v),{type:'time',half:true}));
-    c.appendChild(tr);
-    c.appendChild(textInput('Denetçi',fd.genel.denetci,v=>updFd('genel','denetci',v)));
-    wrap.appendChild(c);
-  }
-  else if(step===1){
-    wrap.appendChild(secTitle('📦','Raf & Planogram','Raf düzeni ve planogram uyumu'));
-    const c=card([]);
-    c.appendChild(radio('Planogram Uyumu',o3,fd.raf.planogram,v=>updFd('raf','planogram',v),true));
-    c.appendChild(radio('Marka Blok Uygulaması',o3,fd.raf.marka,v=>updFd('raf','marka',v),true));
-    c.appendChild(radio('Raf Doluluk',[{v:'Tam',l:'✅ %90+',c:GREEN},{v:'Kısmi',l:'⚠️ %70-89',c:GOLD},{v:'Yok',l:'🔴 <%70',c:RED}],fd.raf.doluluk,v=>updFd('raf','doluluk',v)));
-    c.appendChild(radio('FIFO / Ürün Rotasyonu',o3,fd.raf.fifo,v=>updFd('raf','fifo',v),true));
-    c.appendChild(textarea('Notlar',fd.raf.notlar,v=>updFd('raf','notlar',v),{placeholder:'Raf ile ilgili tespitler...'}));
-    c.appendChild(photoPicker(fd.raf.photos||[],p=>updP('raf',p)));
-    wrap.appendChild(c);
-  }
-  else if(step===2){ wrap.appendChild(renderSKT()); }
-  else if(step===3){
-    wrap.appendChild(secTitle('🏷️','Fiyat & Etiket','Fiyat doğruluğu ve kampanya etiket kontrolü'));
-    const c=card([]);
-    c.appendChild(radio('Fiyat Etiketi Doğruluğu',o3,fd.etiket.dogruluk,v=>updFd('etiket','dogruluk',v),true));
-    c.appendChild(radio('Kampanya Etiketi',[{v:'Tam',l:'✅ Doğru',c:GREEN},{v:'Kısmi',l:'⚠️ Eksik',c:GOLD},{v:'Sorunlu',l:'🔴 Yanlış',c:RED}],fd.etiket.kampanya,v=>updFd('etiket','kampanya',v),true));
-    const tr=div({display:'flex',gap:10});
-    tr.appendChild(textInput('Eksik Etiket (adet)',fd.etiket.eksik,v=>updFd('etiket','eksik',v),{type:'number',placeholder:'0',half:true}));
-    tr.appendChild(textInput('Yanlış Fiyat (adet)',fd.etiket.yanlis,v=>updFd('etiket','yanlis',v),{type:'number',placeholder:'0',half:true}));
-    c.appendChild(tr);
-    c.appendChild(textarea('Notlar',fd.etiket.notlar,v=>updFd('etiket','notlar',v),{placeholder:'Etiket sorunlarını detaylandırın...'}));
-    c.appendChild(photoPicker(fd.etiket.photos||[],p=>updP('etiket',p)));
-    wrap.appendChild(c);
-  }
-  else if(step===4){
-    wrap.appendChild(secTitle('🏭','Depo Düzeni','Depo organizasyonu ve transfer disiplini'));
-    const c=card([]);
-    c.appendChild(radio('Depo Genel Düzeni',oi,fd.depo.genel,v=>updFd('depo','genel',v),true));
-    c.appendChild(radio('FIFO Depo Uyumu',o3,fd.depo.fifo,v=>updFd('depo','fifo',v),true));
-    c.appendChild(radio('Raf-Depo Transfer Disiplini',o3,fd.depo.transfer,v=>updFd('depo','transfer',v),true));
-    c.appendChild(radio('İade Köşesi Düzeni',oi,fd.depo.iade,v=>updFd('depo','iade',v)));
-    c.appendChild(radio('Soğuk Zincir / Sütlük Dolabı',oi,fd.depo.soguk,v=>updFd('depo','soguk',v)));
-    c.appendChild(textarea('Notlar',fd.depo.notlar,v=>updFd('depo','notlar',v),{placeholder:'Depo ile ilgili tespitler...'}));
-    c.appendChild(photoPicker(fd.depo.photos||[],p=>updP('depo',p)));
-    wrap.appendChild(c);
-  }
-  else if(step===5){
-    wrap.appendChild(secTitle('👥','Personel & Hijyen','Personel görünümü ve görev bilinci'));
-    const c=card([]);
-    c.appendChild(radio('Üniforma Uyumu',o3,fd.personel.unifroma,v=>updFd('personel','unifroma',v),true));
-    c.appendChild(radio('Kişisel Hijyen',o3,fd.personel.hijyen,v=>updFd('personel','hijyen',v),true));
-    c.appendChild(radio('Görev Bilinci',[{v:'Tam',l:'✅ Yüksek',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Düşük',c:RED}],fd.personel.gorev,v=>updFd('personel','gorev',v),true));
-    c.appendChild(radio('Müşteri İlişkileri',[{v:'Tam',l:'✅ İyi',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Kötü',c:RED}],fd.personel.musteri,v=>updFd('personel','musteri',v)));
-    c.appendChild(textarea('Notlar',fd.personel.notlar,v=>updFd('personel','notlar',v),{placeholder:'Personel ile ilgili tespitler...'}));
-    c.appendChild(photoPicker(fd.personel.photos||[],p=>updP('personel',p)));
-    wrap.appendChild(c);
-  }
-  else if(step===6){
-    wrap.appendChild(secTitle('🔄','İade Yönetimi','Depoda bekleyen iade ürün durumu'));
-    const c=card([]);
-    c.appendChild(radio('Bekleyen İade Ürün Var Mı?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}],fd.iade.var,v=>updFd('iade','var',v),true));
-    if(fd.iade.var==='Evet'){
-      const tr=div({display:'flex',gap:10});
-      tr.appendChild(textInput('Ürün Adedi',fd.iade.adet,v=>updFd('iade','adet',v),{type:'number',placeholder:'0',half:true}));
-      tr.appendChild(textInput('En Uzun Bekleme (gün)',fd.iade.sure,v=>updFd('iade','sure',v),{type:'number',placeholder:'0',half:true}));
-      c.appendChild(tr);
-      c.appendChild(textarea('Firmalar / Markalar',fd.iade.firma,v=>updFd('iade','firma',v),{placeholder:'Hangi firmaların ürünleri bekliyor?',rows:2}));
-    }
-    c.appendChild(textarea('Notlar',fd.iade.notlar,v=>updFd('iade','notlar',v),{placeholder:'İade ile ilgili notlar...'}));
-    c.appendChild(photoPicker(fd.iade.photos||[],p=>updP('iade',p)));
-    wrap.appendChild(c);
-  }
-  else if(step===7){
-    const score=calcScore(fd);
-    wrap.appendChild(secTitle('⭐','Genel Değerlendirme','Denetim sonuç özeti ve aksiyonlar'));
-    wrap.appendChild(scoreBox(score));
-    const c1=card([],{accent:RED});
-    c1.appendChild(textarea('🔴 Kritik Bulgular',fd.degerl.kritik,v=>updFd('degerl','kritik',v),{placeholder:'Acil müdahale gerektiren tespitler...'}));
-    wrap.appendChild(c1);
-    const c2=card([]);
-    c2.appendChild(textarea('📋 Önceki Aksiyon Durumları',fd.degerl.onceki,v=>updFd('degerl','onceki',v),{placeholder:'Önceki aksiyonlar tamamlandı mı?'}));
-    c2.appendChild(textarea('✅ Yeni Aksiyonlar',fd.degerl.yeni,v=>updFd('degerl','yeni',v),{placeholder:'Alınması gereken aksiyonlar ve sorumluları...'}));
-    c2.appendChild(textarea('📝 Genel Notlar',fd.degerl.genel,v=>updFd('degerl','genel',v),{placeholder:'Genel değerlendirme...'}));
-    c2.appendChild(photoPicker(fd.degerl.photos||[],p=>updP('degerl',p)));
-    wrap.appendChild(c2);
-  }
-  else if(step===8){ wrap.appendChild(renderRapor()); }
-
-  return wrap;
-}
-
-function renderSKT(){
-  const fd=state.fd;
-  const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
-  const wrap=div({});
-  wrap.appendChild(secTitle('⏰','SKT Kontrolü','Son kullanma tarihi ve FIFO denetimi'));
-  const c=card([]);
-  c.appendChild(radio('SKT Geçmiş Ürün Var Mı?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'🔴 Evet',c:RED}],fd.skt.sktVar,v=>updFd('skt','sktVar',v),true));
-  c.appendChild(radio('Yakın SKT (7 gün içinde)?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}],fd.skt.yakinVar,v=>updFd('skt','yakinVar',v)));
-  c.appendChild(radio('FIFO Uygulaması',o3,fd.skt.fifo,v=>updFd('skt','fifo',v),true));
-  wrap.appendChild(c);
-
-  // SKT list
-  const lb=div({background:'#FDECEA',border:`1px solid ${RED}`,borderRadius:12,padding:16,marginBottom:14});
-  lb.appendChild(div({fontWeight:700,color:RED,fontSize:15,marginBottom:12},'🔴 SKT / Sorunlu Ürün Listesi'));
-
-  // Input form
-  const form=div({background:'white',borderRadius:9,padding:12,marginBottom:10});
-  const brow=div({display:'flex',gap:8,marginBottom:8,alignItems:'flex-end'});
-  const binp=h('input',{placeholder:'Barkod no',style:{flex:1,padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}});
-  binp.value=state.sktItem.barkod;
-  binp.addEventListener('input',e=>{state.sktItem.barkod=e.target.value;});
-  brow.appendChild(binp);
-  brow.appendChild(btn({padding:'9px 14px',background:NAVY,color:'white',border:'none',borderRadius:7,fontSize:13,cursor:'pointer',fontWeight:700,flexShrink:0},openScanner,'📷 Tara'));
-  form.appendChild(brow);
-
-  const unameWrap=div({gridColumn:'1/-1',marginBottom:8});
-  unameWrap.appendChild(div({fontSize:12,color:'#666',marginBottom:4},'Ürün Adı *'));
-  const uninp=h('input',{placeholder:'Ürün adı',style:{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}});
-  uninp.value=state.sktItem.urun;
-  uninp.addEventListener('input',e=>{state.sktItem.urun=e.target.value;});
-  unameWrap.appendChild(uninp);
-  form.appendChild(unameWrap);
-
-  const grid=div({display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8});
-  [['Gramaj','gramaj','500g','text'],['SKT Tarihi','skt','','date'],['Miktar','miktar','Adet','text'],['Alan / Raf No','alan','Raf 3A...','text']].forEach(([lbl,key,ph,type])=>{
-    const w=div({});
-    w.appendChild(div({fontSize:12,color:'#666',marginBottom:4},lbl));
-    const inp=h('input',{type,placeholder:ph,style:{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}});
-    inp.value=state.sktItem[key]||'';
-    inp.addEventListener('input',e=>{state.sktItem[key]=e.target.value;});
-    w.appendChild(inp);grid.appendChild(w);
-  });
-  form.appendChild(grid);
-  form.appendChild(btn({width:'100%',padding:11,background:RED,color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:14,cursor:'pointer'},addSktItem,'+ Ürün Ekle'));
-  lb.appendChild(form);
-
-  if((fd.skt.liste||[]).length===0){
-    lb.appendChild(div({color:'#999',fontSize:13,textAlign:'center',padding:'8px 0'},'Henüz ürün eklenmedi'));
-  } else {
-    (fd.skt.liste||[]).forEach(it=>{
-      const row=div({background:'white',borderRadius:8,padding:'10px 12px',marginBottom:7,display:'flex',justifyContent:'space-between',alignItems:'flex-start'});
-      const left=div({flex:1,minWidth:0});
-      const title=div({fontWeight:700,fontSize:14});
-      title.innerHTML=`${it.urun}${it.gramaj?` <span style="font-weight:400;color:#888;font-size:12px">${it.gramaj}</span>`:''}`;
-      left.appendChild(title);
-      left.appendChild(div({fontSize:12,color:'#666',marginTop:2},`${it.barkod?it.barkod+' • ':''}SKT: ${it.skt||'?'} • ${it.miktar||'?'} adet${it.alan?' • '+it.alan:''}`));
-      row.appendChild(left);
-      row.appendChild(btn({background:'none',border:'none',color:RED,fontSize:22,cursor:'pointer',padding:'0 4px',lineHeight:1},()=>delSktItem(it.id),'×'));
-      lb.appendChild(row);
-    });
-  }
-  wrap.appendChild(lb);
-  const c2=card([]);
-  c2.appendChild(textarea('Ek Notlar',fd.skt.notlar,v=>updFd('skt','notlar',v),{placeholder:'SKT ile ilgili ek tespitler...'}));
-  c2.appendChild(photoPicker(fd.skt.photos||[],p=>updP('skt',p)));
-  wrap.appendChild(c2);
-  return wrap;
-}
-
-function addSktItem(){
-  if(!state.sktItem.urun.trim()) return;
-  state.fd.skt.liste=[...(state.fd.skt.liste||[]),{...state.sktItem,id:Date.now()}];
-  state.sktItem={barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''};
-  saveFd();
-}
-function delSktItem(id){state.fd.skt.liste=state.fd.skt.liste.filter(x=>x.id!==id);saveFd();}
-
-function openScanner(){state.scannerOpen=true;render();setTimeout(()=>{document.getElementById('scanner-file')?.click();},100);}
-
+// ── Barcode Scanner (silent) ────────────────────────────────────────
 function renderScanner(){
-  const wrap=div({position:'fixed',inset:0,background:'rgba(0,0,0,0.95)',zIndex:2000,display:'flex',flexDirection:'column'});
-  const hdr=div({background:NAVY,padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0});
-  hdr.appendChild(div({color:'white',fontWeight:700,fontSize:16},'📷 Barkod Tara'));
-  hdr.appendChild(btn({background:'none',border:'none',color:'white',fontSize:28,cursor:'pointer',lineHeight:1},closeScanner,'×'));
-  wrap.appendChild(hdr);
-  const body=div({flex:1,display:'flex',flexDirection:'column',padding:20,gap:14,overflowY:'auto'});
-  body.appendChild(div({background:'rgba(255,255,255,0.08)',borderRadius:12,padding:16,color:'#ccc',fontSize:13,lineHeight:1.8},
-    div({color:'white',fontWeight:700,fontSize:14,marginBottom:4},'Nasıl Taranır?'),
-    '1. Fotoğraf Çek butonuna basın\n2. Barkodu kameraya getirin\n3. Uygulama otomatik okur'
-  ));
-  body.appendChild(btn({padding:18,background:GOLD,color:'white',border:'none',borderRadius:14,fontWeight:700,fontSize:18,cursor:'pointer'},()=>document.getElementById('scanner-file')?.click(),'📷 Fotoğraf Çek'));
-  const inp=h('input',{id:'scanner-file',type:'file',accept:'image/*',capture:'environment',style:{display:'none'}});
-  inp.addEventListener('change',handleScan);
-  body.appendChild(inp);
-  body.appendChild(div({display:'flex',alignItems:'center',gap:10,color:'#666',fontSize:12},
-    div({flex:1,height:1,background:'rgba(255,255,255,0.15)'}),
-    'veya',
-    div({flex:1,height:1,background:'rgba(255,255,255,0.15)'})
-  ));
-  const manRow=div({display:'flex',gap:8});
-  const minp=h('input',{id:'manual-bc',type:'number',placeholder:'8690000000000',style:{flex:1,padding:'12px',border:'none',borderRadius:9,fontSize:15,outline:'none',background:'white'}});
-  minp.addEventListener('keydown',e=>{if(e.key==='Enter') doManualLookup();});
-  manRow.appendChild(minp);
-  manRow.appendChild(btn({padding:'12px 18px',background:GOLD,color:'white',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer'},doManualLookup,'Ara'));
+  const w=el('div','scanner-wrap');
+  const hdr=el('div','scanner-hdr');
+  hdr.appendChild(el('span','scanner-title','📷 Barkod Tara'));
+  const cls=el('button','scanner-close','×');on(cls,'click',closeScanner);
+  hdr.appendChild(cls);w.appendChild(hdr);
+
+  const body=el('div','scanner-body');
+  const info=el('div','scanner-info');
+  const strong=el('strong','','Nasıl Taranır?');
+  info.appendChild(strong);
+  info.appendChild(document.createTextNode('1. Fotoğraf Çek butonuna basın\n2. Barkodu kameraya getirin\n3. Ürün bilgileri otomatik dolar'));
+  body.appendChild(info);
+
+  const scanBtn=el('button','scan-btn','📷 Fotoğraf Çek');
+  const inp=el('input');inp.type='file';inp.accept='image/*';inp.setAttribute('capture','environment');inp.style.display='none';inp.id='scanner-file';
+  on(inp,'change',handleScan);
+  on(scanBtn,'click',()=>inp.click());
+  body.appendChild(scanBtn);body.appendChild(inp);
+
+  body.appendChild(el('div',''));// spacer
+  const orDiv=el('div','scanner-or');
+  orDiv.appendChild(el('div','scanner-or-line'));
+  orDiv.appendChild(document.createTextNode('veya manuel girin'));
+  orDiv.appendChild(el('div','scanner-or-line'));
+  body.appendChild(orDiv);
+
+  const manRow=el('div','manual-row');
+  const minp=el('input','manual-inp');minp.type='number';minp.placeholder='8690000000000';minp.id='manual-bc';
+  on(minp,'keydown',e=>{if(e.key==='Enter')doManualLookup();});
+  const mbtn=el('button','manual-btn','Ara');on(mbtn,'click',doManualLookup);
+  manRow.appendChild(minp);manRow.appendChild(mbtn);
   body.appendChild(manRow);
-  wrap.appendChild(body);
-  return wrap;
+
+  w.appendChild(body);
+  return w;
 }
 
-function closeScanner(){state.scannerOpen=false;render();}
+function closeScanner(){S.scanOpen=false;render();}
 
 async function handleScan(e){
-  const f=e.target.files[0]; if(!f) return;
-  showScanStatus('🔍 Barkod okunuyor...');
+  const f=e.target.files[0];if(!f)return;
   try{
-    if(!('BarcodeDetector' in window)){showScanStatus('❌ Desteklenmiyor — manuel girin');return;}
+    if(!('BarcodeDetector' in window)){e.target.value='';return;}
     const bm=await createImageBitmap(f);
     const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf']});
     const res=await det.detect(bm);
     if(res.length>0) await doLookup(res[0].rawValue);
-    else showScanStatus('⚠️ Okunamadı — tekrar deneyin');
-  }catch(e){showScanStatus('⚠️ Hata — manuel girin');}
+  }catch(err){}
   e.target.value='';
-}
-
-function showScanStatus(msg){
-  const el=document.getElementById('scan-status');
-  if(el) el.textContent=msg;
-  else alert(msg);
 }
 
 async function doManualLookup(){
   const bc=document.getElementById('manual-bc')?.value?.trim();
-  if(!bc) return;
-  await doLookup(bc);
+  if(bc) await doLookup(bc);
 }
 
 async function doLookup(bc){
-  showScanStatus('🌐 Ürün aranıyor...');
+  // Silent lookup - user sees nothing until result arrives
+  S.sktItem.barkod=bc;
+  S.scanOpen=false;
+  render(); // close scanner first, show current barkod
+  
+  // Fetch in background
   let name='',qty='';
   try{
     const res=await fetch(`https://world.openfoodfacts.org/api/v0/product/${bc}.json`);
@@ -815,144 +450,496 @@ async function doLookup(bc){
       qty=data.product.quantity||'';
     }
   }catch(e){}
-  state.sktItem.barkod=bc;
-  state.sktItem.urun=name;
-  state.sktItem.gramaj=qty;
-  state.scannerOpen=false;
+  S.sktItem.urun=name;
+  S.sktItem.gramaj=qty;
   render();
 }
 
-function renderRapor(){
-  const fd=state.fd;
-  const score=calcScore(fd);
-  const sc2=sco(score);
-  const g=fd.genel;
-  const tp=[fd.raf,fd.skt,fd.etiket,fd.depo,fd.personel,fd.iade,fd.degerl].reduce((n,s)=>n+(s.photos||[]).length,0);
-  const rows=[['Raf & Planogram',fd.raf.planogram],['SKT Durumu',fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—'],['Fiyat & Etiket',fd.etiket.dogruluk],['Depo Düzeni',fd.depo.genel],['Personel',fd.personel.unifroma],['İade Durumu',fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—']];
-  const vc=v=>!v||v==='—'?'#aaa':v.includes('✅')||['Tam','İyi'].includes(v)?GREEN:v.includes('⚠️')||['Kısmi','Orta'].includes(v)?GOLD:RED;
-  const wrap=div({});
-  wrap.appendChild(secTitle('📄','Rapor & Gönder','Özeti görüntüle, sisteme kaydet ve indir'));
+// ── Form Steps ─────────────────────────────────────────────────────
+function stepGenel(){
+  const fd=S.fd,u=S.user;
+  const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','📋'));
+  w.appendChild(el('div','sec-title','Genel Bilgiler'));
+  w.appendChild(el('div','sec-sub','Denetim başlangıç bilgilerini doldurun'));
+  const c=card();
+  // Şube
+  const subW=el('div','field');
+  subW.appendChild(el('label','field-label','Şube'));
+  if(u.sube){
+    const d=el('div','field-readonly',u.sube);subW.appendChild(d);
+  } else {
+    const sel=el('select','field-select');
+    const def=el('option','','Şube seçin...');def.value='';sel.appendChild(def);
+    BRANCHES.forEach(b=>{const o=el('option','',b);o.value=b;if(fd.genel.sube===b)o.selected=true;sel.appendChild(o);});
+    on(sel,'change',e=>upd('genel','sube',e.target.value));
+    subW.appendChild(sel);
+  }
+  c.appendChild(subW);
+  c.appendChild(field('Denetim Tarihi',textInp(fd.genel.tarih,v=>upd('genel','tarih',v),{type:'date'})));
+  c.appendChild(twoCol(
+    field('Başlangıç',textInp(fd.genel.bas,v=>upd('genel','bas',v),{type:'time'})),
+    field('Bitiş',textInp(fd.genel.bitis,v=>upd('genel','bitis',v),{type:'time'}))
+  ));
+  c.appendChild(field('Denetçi Adı',textInp(fd.genel.denetci,v=>upd('genel','denetci',v),{placeholder:'Adınızı yazın...'})));
+  w.appendChild(c);
+  return w;
+}
 
-  const hbox=div({background:`${NAVY}12`,border:`1px solid ${NAVY}30`,borderRadius:12,padding:16,marginBottom:14});
-  const hrow=div({display:'flex',justifyContent:'space-between',alignItems:'center'});
-  const hleft=div({});
-  hleft.appendChild(div({fontWeight:700,color:NAVY,fontSize:15},g.sube||'Şube belirtilmedi'));
-  hleft.appendChild(div({fontSize:12,color:'#555',marginTop:2},`${g.tarih} • ${g.bas||'--:--'} – ${g.bitis||'--:--'}`));
-  hleft.appendChild(div({fontSize:12,color:'#555'},g.denetci));
-  if(tp>0) hleft.appendChild(div({fontSize:12,color:GOLD,marginTop:2},`📸 ${tp} fotoğraf`));
-  hrow.appendChild(hleft);
-  const badge=div({textAlign:'center',background:sc2,color:'white',borderRadius:12,padding:'10px 16px',minWidth:72});
-  badge.appendChild(div({fontSize:32,fontWeight:800,lineHeight:1},String(score)));
-  badge.appendChild(div({fontSize:11},'/100'));
-  hrow.appendChild(badge);
-  hbox.appendChild(hrow);
-  hbox.appendChild(div({marginTop:10,fontSize:13,fontWeight:700,color:sc2},slbl(score)));
-  wrap.appendChild(hbox);
+const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
+const oi=[{v:'İyi',l:'✅ İyi',c:GREEN},{v:'Orta',l:'⚠️ Orta',c:GOLD},{v:'Kötü',l:'🔴 Kötü',c:RED}];
 
-  const rc=card([]);
-  rows.forEach(([l,v],i)=>{
-    const row=div({display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'});
-    row.appendChild(div({fontSize:14,color:'#333'},l));
-    row.appendChild(div({fontSize:13,fontWeight:700,color:vc(v)},v||'—'));
-    rc.appendChild(row);
+function stepRaf(){
+  const fd=S.fd;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','📦'));w.appendChild(el('div','sec-title','Raf & Planogram'));w.appendChild(el('div','sec-sub','Raf düzeni ve planogram uyumu'));
+  const c=card(
+    radioGroup('Planogram Uyumu',o3,fd.raf.planogram,v=>upd('raf','planogram',v),true),
+    radioGroup('Marka Blok Uygulaması',o3,fd.raf.marka,v=>upd('raf','marka',v),true),
+    radioGroup('Raf Doluluk',[{v:'Tam',l:'✅ %90+',c:GREEN},{v:'Kısmi',l:'⚠️ %70-89',c:GOLD},{v:'Yok',l:'🔴 <%70',c:RED}],fd.raf.doluluk,v=>upd('raf','doluluk',v)),
+    radioGroup('FIFO / Ürün Rotasyonu',o3,fd.raf.fifo,v=>upd('raf','fifo',v),true),
+    field('Notlar',taInp(fd.raf.notlar,v=>upd('raf','notlar',v),{placeholder:'Raf ile ilgili tespitler...'})),
+    photoPicker(fd.raf.photos||[],p=>updP('raf',p))
+  );
+  w.appendChild(c);return w;
+}
+
+function stepSKT(){
+  const fd=S.fd;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','⏰'));w.appendChild(el('div','sec-title','SKT Kontrolü'));w.appendChild(el('div','sec-sub','Son kullanma tarihi ve FIFO denetimi'));
+  w.appendChild(card(
+    radioGroup('SKT Geçmiş Ürün Var Mı?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'🔴 Evet',c:RED}],fd.skt.sktVar,v=>upd('skt','sktVar',v),true),
+    radioGroup('Yakın SKT (7 gün içinde)?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}],fd.skt.yakinVar,v=>upd('skt','yakinVar',v)),
+    radioGroup('FIFO Uygulaması',o3,fd.skt.fifo,v=>upd('skt','fifo',v),true)
+  ));
+
+  // SKT List
+  const box=el('div','skt-box');
+  const title=el('div','skt-box-title');title.innerHTML='🔴 SKT / Sorunlu Ürün Listesi';
+  box.appendChild(title);
+
+  // Input form
+  const form=el('div','skt-form');
+  const brow=el('div','skt-brow');
+  const binp=el('input','skt-inp');binp.placeholder='Barkod no';binp.value=S.sktItem.barkod;
+  on(binp,'input',e=>{S.sktItem.barkod=e.target.value;});
+  const taraBtn=el('button','tara-btn','📷 Tara');
+  on(taraBtn,'click',()=>{S.scanOpen=true;render();setTimeout(()=>document.getElementById('scanner-file')?.click(),100);});
+  brow.appendChild(binp);brow.appendChild(taraBtn);form.appendChild(brow);
+
+  // Ürün adı
+  const unameInp=el('input','skt-inp');unameInp.placeholder='Ürün adı *';unameInp.value=S.sktItem.urun;unameInp.style.marginBottom='12px';
+  on(unameInp,'input',e=>{S.sktItem.urun=e.target.value;});
+  form.appendChild(unameInp);
+
+  // Grid
+  const grid=el('div','skt-grid');
+  [['Gramaj','gramaj','500g','text'],['SKT Tarihi','skt','','date'],['Miktar (adet)','miktar','','text'],['Alan / Raf No','alan','Raf 3A','text']].forEach(([lbl,key,ph,type])=>{
+    const fw=el('div','skt-field');
+    fw.appendChild(el('div','skt-flabel',lbl));
+    const inp=el('input','skt-inp');inp.type=type;inp.placeholder=ph;inp.value=S.sktItem[key]||'';
+    on(inp,'input',e=>{S.sktItem[key]=e.target.value;});
+    fw.appendChild(inp);grid.appendChild(fw);
   });
-  wrap.appendChild(rc);
+  form.appendChild(grid);
 
+  const addBtn=el('button','skt-add-btn','+ Ürün Ekle');
+  on(addBtn,'click',()=>{
+    if(!S.sktItem.urun.trim())return;
+    S.fd.skt.liste=[...(S.fd.skt.liste||[]),{...S.sktItem,id:Date.now()}];
+    S.sktItem={barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''};
+    saveFd();
+  });
+  form.appendChild(addBtn);
+  box.appendChild(form);
+
+  // Liste
+  const liste=S.fd.skt.liste||[];
+  if(liste.length===0){box.appendChild(el('div','skt-empty','Henüz ürün eklenmedi'));}
+  else liste.forEach(it=>{
+    const row=el('div','skt-item');
+    const left=el('div');
+    const name=el('div','skt-item-name',it.urun);
+    if(it.gramaj){const g=el('span','skt-item-gram',it.gramaj);name.appendChild(g);}
+    left.appendChild(name);
+    left.appendChild(el('div','skt-item-info',`${it.barkod?it.barkod+' • ':''}SKT: ${it.skt||'?'} • ${it.miktar||'?'} adet${it.alan?' • '+it.alan:''}`));
+    const del=el('button','skt-del','×');on(del,'click',()=>{S.fd.skt.liste=S.fd.skt.liste.filter(x=>x.id!==it.id);saveFd();});
+    row.appendChild(left);row.appendChild(del);box.appendChild(row);
+  });
+  w.appendChild(box);
+
+  w.appendChild(card(
+    field('Ek Notlar',taInp(fd.skt.notlar,v=>upd('skt','notlar',v),{placeholder:'SKT ile ilgili ek tespitler...'})),
+    photoPicker(fd.skt.photos||[],p=>updP('skt',p))
+  ));
+  return w;
+}
+
+function stepEtiket(){
+  const fd=S.fd;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','🏷️'));w.appendChild(el('div','sec-title','Fiyat & Etiket'));w.appendChild(el('div','sec-sub','Fiyat doğruluğu ve kampanya etiket kontrolü'));
+  w.appendChild(card(
+    radioGroup('Fiyat Etiketi Doğruluğu',o3,fd.etiket.dogruluk,v=>upd('etiket','dogruluk',v),true),
+    radioGroup('Kampanya Etiketi',[{v:'Tam',l:'✅ Doğru',c:GREEN},{v:'Kısmi',l:'⚠️ Eksik',c:GOLD},{v:'Sorunlu',l:'🔴 Yanlış',c:RED}],fd.etiket.kampanya,v=>upd('etiket','kampanya',v),true),
+    twoCol(
+      field('Eksik Etiket (adet)',textInp(fd.etiket.eksik,v=>upd('etiket','eksik',v),{type:'number',placeholder:'0'})),
+      field('Yanlış Fiyat (adet)',textInp(fd.etiket.yanlis,v=>upd('etiket','yanlis',v),{type:'number',placeholder:'0'}))
+    ),
+    field('Notlar',taInp(fd.etiket.notlar,v=>upd('etiket','notlar',v),{placeholder:'Etiket sorunlarını detaylandırın...'})),
+    photoPicker(fd.etiket.photos||[],p=>updP('etiket',p))
+  ));
+  return w;
+}
+
+function stepDepo(){
+  const fd=S.fd;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','🏭'));w.appendChild(el('div','sec-title','Depo Düzeni'));w.appendChild(el('div','sec-sub','Depo organizasyonu ve transfer disiplini'));
+  w.appendChild(card(
+    radioGroup('Depo Genel Düzeni',oi,fd.depo.genel,v=>upd('depo','genel',v),true),
+    radioGroup('FIFO Depo Uyumu',o3,fd.depo.fifo,v=>upd('depo','fifo',v),true),
+    radioGroup('Raf-Depo Transfer Disiplini',o3,fd.depo.transfer,v=>upd('depo','transfer',v),true),
+    radioGroup('İade Köşesi Düzeni',oi,fd.depo.iade,v=>upd('depo','iade',v)),
+    radioGroup('Soğuk Zincir / Sütlük Dolabı',oi,fd.depo.soguk,v=>upd('depo','soguk',v)),
+    field('Notlar',taInp(fd.depo.notlar,v=>upd('depo','notlar',v),{placeholder:'Depo ile ilgili tespitler...'})),
+    photoPicker(fd.depo.photos||[],p=>updP('depo',p))
+  ));
+  return w;
+}
+
+function stepPersonel(){
+  const fd=S.fd;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','👥'));w.appendChild(el('div','sec-title','Personel & Hijyen'));w.appendChild(el('div','sec-sub','Personel görünümü ve görev bilinci'));
+  w.appendChild(card(
+    radioGroup('Üniforma Uyumu',o3,fd.personel.unifroma,v=>upd('personel','unifroma',v),true),
+    radioGroup('Kişisel Hijyen',o3,fd.personel.hijyen,v=>upd('personel','hijyen',v),true),
+    radioGroup('Görev Bilinci',[{v:'Tam',l:'✅ Yüksek',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Düşük',c:RED}],fd.personel.gorev,v=>upd('personel','gorev',v),true),
+    radioGroup('Müşteri İlişkileri',[{v:'Tam',l:'✅ İyi',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Kötü',c:RED}],fd.personel.musteri,v=>upd('personel','musteri',v)),
+    field('Notlar',taInp(fd.personel.notlar,v=>upd('personel','notlar',v),{placeholder:'Personel ile ilgili tespitler...'})),
+    photoPicker(fd.personel.photos||[],p=>updP('personel',p))
+  ));
+  return w;
+}
+
+function stepIade(){
+  const fd=S.fd;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','🔄'));w.appendChild(el('div','sec-title','İade Yönetimi'));w.appendChild(el('div','sec-sub','Depoda bekleyen iade ürün durumu'));
+  const c=card(radioGroup('Bekleyen İade Ürün Var Mı?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}],fd.iade.var,v=>upd('iade','var',v),true));
+  if(fd.iade.var==='Evet'){
+    c.appendChild(twoCol(
+      field('Ürün Adedi',textInp(fd.iade.adet,v=>upd('iade','adet',v),{type:'number',placeholder:'0'})),
+      field('En Uzun Bekleme (gün)',textInp(fd.iade.sure,v=>upd('iade','sure',v),{type:'number',placeholder:'0'}))
+    ));
+    c.appendChild(field('Firmalar / Markalar',taInp(fd.iade.firma,v=>upd('iade','firma',v),{placeholder:'Hangi firmaların ürünleri bekliyor?',rows:2})));
+  }
+  c.appendChild(field('Notlar',taInp(fd.iade.notlar,v=>upd('iade','notlar',v),{placeholder:'İade ile ilgili notlar...'})));
+  c.appendChild(photoPicker(fd.iade.photos||[],p=>updP('iade',p)));
+  w.appendChild(c);return w;
+}
+
+function stepDegerl(){
+  const fd=S.fd;const score=calcScore(fd);const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','⭐'));w.appendChild(el('div','sec-title','Genel Değerlendirme'));w.appendChild(el('div','sec-sub','Denetim sonuç özeti ve aksiyonlar'));
+  w.appendChild(scoreBox(score));
+  w.appendChild(card(field('🔴 Kritik Bulgular',taInp(fd.degerl.kritik,v=>upd('degerl','kritik',v),{placeholder:'Acil müdahale gerektiren tespitler...'}))));
+  w.appendChild(card(
+    field('📋 Önceki Aksiyon Durumları',taInp(fd.degerl.onceki,v=>upd('degerl','onceki',v),{placeholder:'Önceki aksiyonlar tamamlandı mı?'})),
+    field('✅ Yeni Aksiyonlar',taInp(fd.degerl.yeni,v=>upd('degerl','yeni',v),{placeholder:'Alınması gereken aksiyonlar ve sorumluları...'})),
+    field('📝 Genel Notlar',taInp(fd.degerl.genel,v=>upd('degerl','genel',v),{placeholder:'Genel değerlendirme...'})),
+    photoPicker(fd.degerl.photos||[],p=>updP('degerl',p))
+  ));
+  return w;
+}
+
+function stepRapor(){
+  const fd=S.fd;const score=calcScore(fd);const g=fd.genel;const w=el('div','fade-in');
+  w.appendChild(el('div','sec-icon','📄'));w.appendChild(el('div','sec-title','Rapor & Gönder'));w.appendChild(el('div','sec-sub','Özeti görüntüle ve sisteme kaydet'));
+
+  // Summary header
+  const sum=el('div','summary-card');
+  const sumRow=el('div');sumRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px';
+  const sumLeft=el('div');
+  sumLeft.appendChild(el('div','',g.sube||'Şube belirtilmedi')).style.cssText='font-weight:700;font-size:16px;color:#1B3A6B';
+  sumLeft.appendChild(el('div','',`${g.tarih} • ${g.bas||'--:--'} – ${g.bitis||'--:--'}`)).style.cssText='font-size:12px;color:#888;margin-top:3px';
+  sumLeft.appendChild(el('div','',g.denetci)).style.cssText='font-size:12px;color:#888';
+  const badge=el('div','score-badge');badge.style.background=sco(score);
+  badge.appendChild(el('span','score-badge-num',String(score)));
+  badge.appendChild(el('span','score-badge-sub','/100'));
+  sumRow.appendChild(sumLeft);sumRow.appendChild(badge);sum.appendChild(sumRow);
+  const sc2=sco(score);
+  const slblEl=el('div','',slbl(score));slblEl.style.cssText=`font-size:13px;font-weight:700;color:${sc2}`;
+  sum.appendChild(slblEl);
+  w.appendChild(sum);
+
+  // Rows
+  const vc=v=>!v||v==='—'?'badge-grey':v.includes('✅')||['Tam','İyi'].includes(v)?'badge-green':v.includes('⚠️')||['Kısmi','Orta'].includes(v)?'badge-gold':'badge-red';
+  const rows=[
+    ['Raf & Planogram',fd.raf.planogram],
+    ['SKT Durumu',fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—'],
+    ['Fiyat & Etiket',fd.etiket.dogruluk],
+    ['Depo Düzeni',fd.depo.genel],
+    ['Personel',fd.personel.unifroma],
+    ['İade Durumu',fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—'],
+  ];
+  const rc=el('div','summary-card');
+  rows.forEach(([l,v])=>{
+    const r=el('div','summary-row');
+    r.appendChild(el('span','summary-key',l));
+    r.appendChild(el('span',`summary-val ${vc(v||'—')}`,v||'—'));
+    rc.appendChild(r);
+  });
+  w.appendChild(rc);
+
+  // SKT list
   if((fd.skt.liste||[]).length>0){
-    const sc=card([],{style:{background:'#FDECEA',border:`1px solid ${RED}`}});
-    sc.appendChild(div({fontWeight:700,color:RED,marginBottom:8},`🔴 SKT Sorunlu Ürünler (${fd.skt.liste.length} adet)`));
+    const sc=el('div','card-red');
+    sc.appendChild(el('div','skt-box-title',`🔴 SKT Sorunlu Ürünler (${fd.skt.liste.length} adet)`));
     fd.skt.liste.forEach((it,i)=>{
-      const r=div({fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'});
-      r.innerHTML=`<b>${it.urun}</b>${it.gramaj?` <span style="color:#888">${it.gramaj}</span>`:''} — SKT: ${it.skt||'?'} — ${it.miktar||'?'} adet`;
+      const r=el('div');r.style.cssText='font-size:14px;padding:6px 0;border-bottom:1px solid #FFCDD2';
+      r.innerHTML=`<b>${it.urun}</b>${it.gramaj?` <span style="color:#888;font-size:12px">${it.gramaj}</span>`:''} — SKT: ${it.skt||'?'} — ${it.miktar||'?'} adet`;
       sc.appendChild(r);
     });
-    wrap.appendChild(sc);
+    w.appendChild(sc);
   }
 
-  const btns=div({display:'flex',flexDirection:'column',gap:12,marginTop:24});
-  if(!state.submitted){
-    btns.appendChild(btn({padding:16,background:state.submitting?'#aaa':GREEN,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:16,cursor:state.submitting?'default':'pointer'},
-      state.submitting?null:doSubmit, state.submitting?'⏳ Gönderiliyor...':'☁️ Sisteme Kaydet & Gönder'));
+  // Buttons
+  const btns=el('div','action-btns');
+  if(!S.submitted){
+    const sb=el('button',S.submitting?'btn-submit disabled':'btn-submit',S.submitting?'⏳ Gönderiliyor...':'☁️ Sisteme Kaydet & Gönder');
+    if(!S.submitting) on(sb,'click',doSubmit);
+    btns.appendChild(sb);
   } else {
-    btns.appendChild(div({padding:16,background:'#E8F5E9',border:`1px solid ${GREEN}`,borderRadius:12,textAlign:'center',color:GREEN,fontWeight:700,fontSize:15},'✅ Denetim sisteme kaydedildi!'));
+    btns.appendChild(el('button','btn-success','✅ Denetim sisteme kaydedildi!'));
   }
-  btns.appendChild(btn({padding:14,background:RED,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer'},doPDF,'📄 PDF İndir'));
-  btns.appendChild(btn({padding:14,background:NAVY,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer'},doWord,'📝 Word İndir'));
-  wrap.appendChild(btns);
-  return wrap;
+  const pb=el('button','btn-pdf','📄 PDF İndir');on(pb,'click',doPDF);btns.appendChild(pb);
+  const wb=el('button','btn-word','📝 Word İndir');on(wb,'click',doWord);btns.appendChild(wb);
+  w.appendChild(btns);
+  return w;
+}
+
+function buildRpt(fd,score){
+  const ns=v=>v||'-',g=fd.genel,sc2=sco(score);
+  const sktR=(fd.skt.liste||[]).map(it=>`<tr><td>${ns(it.barkod)}</td><td><b>${it.urun}</b>${it.gramaj?` <small>${it.gramaj}</small>`:''}</td><td>${ns(it.skt)}</td><td>${ns(it.miktar)}</td><td>${ns(it.alan)}</td></tr>`).join('');
+  const row=(l,v)=>v?`<div class="row"><span class="lbl">${l}</span><span>${v}</span></div>`:'';
+  const pg=(ph=[])=>ph.length>0?`<div class="ph"><div class="pl">📸 Fotoğraflar:</div><div class="pg">${ph.slice(0,6).map(p=>`<img src="${p.data}">`).join('')}</div></div>`:'';
+  return`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Saha Denetim Raporu</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px}.hdr{background:#1B3A6B;color:white;padding:18px 24px;text-align:center}.hdr h1{font-size:18px;font-weight:800}.body{padding:20px 24px}.sb{display:inline-block;background:${sc2};color:white;border-radius:10px;padding:14px 20px;text-align:center;margin:14px 0}.sb .n{font-size:40px;font-weight:800;line-height:1}.sb .lb{font-size:13px;font-weight:700;margin-top:5px}table.m{width:100%;border-collapse:collapse;margin:12px 0}table.m td{border:1px solid #ddd;padding:7px 10px}table.m td:first-child{background:#E8EEF7;font-weight:600;width:38%}.sec{background:#E8A020;color:white;padding:7px 12px;font-weight:700;font-size:12px;margin:14px 0 7px;border-radius:5px}.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.lbl{color:#555}.note{background:#F0F4FA;border-left:3px solid #1B3A6B;padding:7px 10px;font-size:11px;color:#444;margin:6px 0}.rb{background:#FDECEA;border:1px solid #C0212B;border-radius:7px;padding:12px;margin:10px 0}.rb h4{color:#C0212B;margin-bottom:8px}table.dt{width:100%;border-collapse:collapse;font-size:11px}table.dt th{background:#C0212B;color:white;padding:5px 8px;text-align:left}table.dt td{border:1px solid #ddd;padding:5px 8px}.ph{margin:10px 0}.pl{font-weight:600;font-size:11px;margin-bottom:7px}.pg{display:flex;flex-wrap:wrap;gap:7px}.pg img{width:150px;height:113px;object-fit:cover;border-radius:6px}.sig{margin-top:36px;border-top:2px solid #1B3A6B;padding-top:14px}@media print{body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="hdr"><h1>BİZİM PAZAR GIDA A.Ş.</h1><p>Saha Denetim Raporu</p></div><div class="body"><table class="m"><tr><td>Şube</td><td>${ns(g.sube)}</td></tr><tr><td>Tarih</td><td>${ns(g.tarih)}</td></tr><tr><td>Saat</td><td>${ns(g.bas)} – ${ns(g.bitis)}</td></tr><tr><td>Denetçi</td><td>${ns(g.denetci)}</td></tr></table><div class="sb"><div class="n">${score}</div><div>/100</div><div class="lb">${slbl(score).replace(/[✅⚠️🔴] /,'')}</div></div><div class="sec">RAF & PLANOGRAM</div>${row('Planogram',fd.raf.planogram)}${row('Marka Blok',fd.raf.marka)}${row('Doluluk',fd.raf.doluluk)}${row('FIFO',fd.raf.fifo)}${fd.raf.notlar?`<div class="note">${fd.raf.notlar}</div>`:''}${pg(fd.raf.photos)}<div class="sec">SKT KONTROLÜ</div>${row('SKT Geçmiş',fd.skt.sktVar)}${row('Yakın SKT',fd.skt.yakinVar)}${row('FIFO',fd.skt.fifo)}${sktR?`<div class="rb"><h4>🔴 SKT Sorunlu Ürünler</h4><table class="dt"><tr><th>Barkod</th><th>Ürün</th><th>SKT</th><th>Miktar</th><th>Alan</th></tr>${sktR}</table></div>`:''}${fd.skt.notlar?`<div class="note">${fd.skt.notlar}</div>`:''}${pg(fd.skt.photos)}<div class="sec">FİYAT & ETİKET</div>${row('Doğruluk',fd.etiket.dogruluk)}${row('Kampanya',fd.etiket.kampanya)}<div class="row"><span class="lbl">Eksik Etiket</span><span>${fd.etiket.eksik||'0'} adet</span></div><div class="row"><span class="lbl">Yanlış Fiyat</span><span>${fd.etiket.yanlis||'0'} adet</span></div>${fd.etiket.notlar?`<div class="note">${fd.etiket.notlar}</div>`:''}${pg(fd.etiket.photos)}<div class="sec">DEPO DÜZENİ</div>${row('Genel',fd.depo.genel)}${row('FIFO',fd.depo.fifo)}${row('Transfer',fd.depo.transfer)}${row('İade Köşesi',fd.depo.iade)}${row('Soğuk Zincir',fd.depo.soguk)}${fd.depo.notlar?`<div class="note">${fd.depo.notlar}</div>`:''}${pg(fd.depo.photos)}<div class="sec">PERSONEL & HİJYEN</div>${row('Üniforma',fd.personel.unifroma)}${row('Hijyen',fd.personel.hijyen)}${row('Görev',fd.personel.gorev)}${row('Müşteri',fd.personel.musteri)}${fd.personel.notlar?`<div class="note">${fd.personel.notlar}</div>`:''}${pg(fd.personel.photos)}<div class="sec">İADE YÖNETİMİ</div>${row('Bekleyen',fd.iade.var)}${fd.iade.var==='Evet'?`${row('Adet',fd.iade.adet)}${row('Firmalar',fd.iade.firma)}${row('Bekleme',fd.iade.sure+' gün')}`:''}${fd.iade.notlar?`<div class="note">${fd.iade.notlar}</div>`:''}${pg(fd.iade.photos)}${fd.degerl.kritik?`<div class="rb" style="margin-top:14px"><h4>🔴 Kritik Bulgular</h4><p style="white-space:pre-wrap;font-size:12px;margin-top:5px">${fd.degerl.kritik}</p></div>`:''}${fd.degerl.yeni?`<div class="sec" style="background:#1B3A6B">AKSİYON PLANI</div><p style="white-space:pre-wrap;font-size:12px;padding:6px 0">${fd.degerl.yeni}</p>`:''}${fd.degerl.genel?`<div class="note" style="margin-top:10px">${fd.degerl.genel}</div>`:''}${pg(fd.degerl.photos)}<div class="sig"><div style="font-weight:700;color:#1B3A6B;font-size:13px">${ns(g.denetci)}</div><div style="color:#666;font-size:11px">Operasyon Müdürü | Bizim Pazar Gıda A.Ş.</div></div></div></body></html>`;
 }
 
 async function doSubmit(){
-  if(state.submitting) return;
-  state.submitting=true;render();
-  const fd=state.fd, score=calcScore(fd);
-  const pl={sube:fd.genel.sube||state.user.sube||'',tarih:fd.genel.tarih,denetci:fd.genel.denetci,score,
+  if(S.submitting)return;S.submitting=true;render();
+  const fd=S.fd,score=calcScore(fd);
+  const pl={sube:fd.genel.sube||S.user.sube||'',tarih:fd.genel.tarih,denetci:fd.genel.denetci,score,
     rafPlanogram:fd.raf.planogram,sktDurum:fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—',
     etiketDurum:fd.etiket.dogruluk,depoDurum:fd.depo.genel,personelDurum:fd.personel.unifroma,
     iadeDurum:fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—',
-    sktListe:fd.skt.liste||[],kritikBulgu:fd.degerl.kritik||'',yeniAksiyonlar:fd.degerl.yeni||'',notlar:fd.degerl.genel||'',userId:state.user.id};
-  const id=await fbSave(pl);
-  state.submitting=false;
-  if(id){state.submitted=true;showStatus('✅ Sisteme kaydedildi!',4000);}
+    sktListe:fd.skt.liste||[],kritikBulgu:fd.degerl.kritik||'',yeniAksiyonlar:fd.degerl.yeni||'',notlar:fd.degerl.genel||'',userId:S.user.id};
+  const id=await fbSave(pl);S.submitting=false;
+  if(id){S.submitted=true;showStatus('✅ Kaydedildi!',4000);}
   else showStatus('⚠️ Bağlantı hatası',3000);
 }
+function doPDF(){const h=buildRpt(S.fd,calcScore(S.fd));const b=new Blob([h],{type:'text/html;charset=utf-8'});const u=URL.createObjectURL(b);const w=window.open(u,'_blank');if(w)w.addEventListener('load',()=>setTimeout(()=>w.print(),500));setTimeout(()=>URL.revokeObjectURL(u),30000);}
+function doWord(){const h=buildRpt(S.fd,calcScore(S.fd));const b=new Blob(['\ufeff'+h],{type:'application/msword;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`Denetim_${(S.fd.genel.sube||'Sube').replace(/ /g,'_')}_${S.fd.genel.tarih}.doc`;a.click();setTimeout(()=>URL.revokeObjectURL(u),5000);}
 
-function doPDF(){
-  const html=buildRpt(state.fd,calcScore(state.fd));
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const w=window.open(url,'_blank');
-  if(w) w.addEventListener('load',()=>setTimeout(()=>w.print(),500));
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
+// ── Login ──────────────────────────────────────────────────────────
+function renderLogin(){
+  const w=el('div','login-wrap');
+  const hero=el('div','login-hero');
+  hero.appendChild(el('div','login-icon','🏪'));
+  hero.appendChild(el('div','login-brand','BİZİM PAZAR'));
+  hero.appendChild(el('div','login-tagline','Saha Denetim Sistemi'));
+  const box=el('div','login-box');
+  box.appendChild(el('div','login-title','Giriş Yap'));
+  box.appendChild(el('div','login-label','Kullanıcı Seçin'));
+  const ul=el('div','user-list');
+  USERS.forEach(u=>{
+    const cls=S.loginSel===u.id?(u.role==='admin'?'user-btn sel-admin':'user-btn sel-user'):'user-btn';
+    const b=el('button',cls,u.label);
+    on(b,'click',()=>{S.loginSel=u.id;S.loginPin='';S.loginErr='';render();});
+    ul.appendChild(b);
+  });
+  box.appendChild(ul);
+  if(S.loginSel){
+    const pw=el('div','pin-wrap');
+    pw.appendChild(el('div','pin-label','PIN Kodu'));
+    const pi=el('input','pin-input');pi.type='password';pi.placeholder='••••';pi.value=S.loginPin;
+    pi.style.borderColor=S.loginErr?RED:'#E0E0E0';
+    on(pi,'input',e=>{S.loginPin=e.target.value;});
+    on(pi,'keydown',e=>{if(e.key==='Enter')doLogin();});
+    pw.appendChild(pi);box.appendChild(pw);
+  }
+  if(S.loginErr) box.appendChild(el('div','pin-err',S.loginErr));
+  const lb=el('button','login-btn','Giriş Yap →');on(lb,'click',doLogin);box.appendChild(lb);
+  w.appendChild(hero);w.appendChild(box);
+  w.appendChild(el('div','login-footer','Bizim Pazar Gıda A.Ş.'));
+  return w;
 }
-function doWord(){
-  const html=buildRpt(state.fd,calcScore(state.fd));
-  const blob=new Blob(['\ufeff'+html],{type:'application/msword;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`Denetim_${(state.fd.genel.sube||'Sube').replace(/ /g,'_')}_${state.fd.genel.tarih}.doc`;
-  a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
+
+function doLogin(){
+  if(!S.loginSel){S.loginErr='Kullanıcı seçin';render();return;}
+  const u=USERS.find(x=>x.id===S.loginSel);
+  if(u&&u.pin===S.loginPin){
+    S.user=u;S.loginErr='';
+    localStorage.setItem('bp-user',JSON.stringify(u));
+    if(u.role==='admin'){S.view='admin';loadDenetimler();}
+    else{S.view='form';S.step=0;try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}};
+    render();
+  }else{S.loginErr='❌ PIN hatalı';S.loginPin='';render();}
+}
+function doLogout(){S.user=null;S.view='login';S.loginSel=null;S.loginPin='';S.loginErr='';localStorage.removeItem('bp-user');render();}
+
+// ── Admin ──────────────────────────────────────────────────────────
+async function loadDenetimler(){S.denetimler=await fbGet(S.adminFilt||null);render();}
+
+function renderAdmin(){
+  const list=S.denetimler,bugun=new Date().toISOString().split('T')[0];
+  const today=list.filter(d=>d.tarih===bugun),crit=list.filter(d=>d.score<60);
+  const filtered=S.adminFilt?list.filter(d=>d.sube===S.adminFilt):list;
+  const w=el('div','admin-wrap');
+  const hdr=el('div','admin-hdr');
+  const hl=el('div');hl.appendChild(el('div','','')).innerHTML='<div style="font-weight:800;font-size:15px;color:white">👑 ADMİN PANELİ</div><div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px">Bizim Pazar — Tüm Şubeler</div>';
+  const lb=el('button','hdr-btn','Çıkış');on(lb,'click',doLogout);
+  hdr.appendChild(hl);hdr.appendChild(lb);w.appendChild(hdr);
+  const body=el('div','admin-body');
+
+  // Stats
+  const stats=el('div','stats');
+  [[' 📋','Toplam',list.length,'denetim',NAVY],['📅','Bugün',today.length,'denetim',GREEN],['🔴','Kritik',crit.length,'<60 puan',RED]].forEach(([ic,lb2,val,sub,bg])=>{
+    const c=el('div','stat');
+    c.appendChild(el('div','stat-icon',ic));
+    const n=el('div','stat-num',String(val));n.style.color=bg;c.appendChild(n);
+    c.appendChild(el('div','stat-lbl',lb2));
+    stats.appendChild(c);
+  });
+  body.appendChild(stats);
+
+  // Şube puanları
+  const spCard=el('div','sube-table');spCard.appendChild(el('div','section-hdr','📊 Şube Ortalama Puanları'));
+  BRANCHES.forEach(sube=>{
+    const sd=list.filter(d=>d.sube===sube);const avg=sd.length?Math.round(sd.reduce((a,d)=>a+d.score,0)/sd.length):null;
+    const row=el('div','sube-row');
+    row.appendChild(el('span','sube-name',sube));
+    row.appendChild(el('span','sube-cnt',`${sd.length} denetim`));
+    if(avg!==null){const b=el('div','sube-badge',String(avg));b.style.background=sco(avg);row.appendChild(b);}
+    else row.appendChild(el('span','','-').className='sube-cnt');
+    spCard.appendChild(row);
+  });
+  body.appendChild(spCard);
+
+  const fsel=el('select','filter-select');
+  fsel.appendChild(el('option','','Tüm Şubeler')).value='';
+  BRANCHES.forEach(b=>{const o=el('option','',b);o.value=b;if(S.adminFilt===b)o.selected=true;fsel.appendChild(o);});
+  on(fsel,'change',e=>{S.adminFilt=e.target.value;loadDenetimler();});
+  body.appendChild(fsel);
+
+  body.appendChild(el('div','section-hdr',`📋 Denetim Kayıtları${S.adminFilt?' — '+S.adminFilt:''}`));
+
+  if(filtered.length===0){
+    const empty=el('div','summary-card');empty.style.textAlign='center';empty.style.color='#aaa';empty.style.padding='32px';empty.textContent='Henüz denetim kaydı yok';
+    body.appendChild(empty);
+  } else {
+    filtered.forEach(d=>{
+      const card=el('button','denetim-card');
+      const left=el('div');
+      left.appendChild(el('div','denetim-sube',d.sube));
+      left.appendChild(el('div','denetim-info',`${d.tarih} • ${d.denetci}`));
+      if(d.kritikBulgu) left.appendChild(el('div','denetim-warn','⚠️ Kritik bulgu var'));
+      const badge=el('div','score-badge');badge.style.background=sco(d.score);
+      badge.appendChild(el('span','score-badge-num',String(d.score)));
+      badge.appendChild(el('span','score-badge-sub','/100'));
+      card.appendChild(left);card.appendChild(badge);
+      on(card,'click',()=>{S.selD=d;S.view='detail';render();});
+      body.appendChild(card);
+    });
+  }
+  const rb=el('button','refresh-btn','🔄 Yenile');on(rb,'click',loadDenetimler);body.appendChild(rb);
+  w.appendChild(body);return w;
+}
+
+function renderDetail(){
+  const d=S.selD;const w=el('div','admin-wrap');
+  const hdr=el('div','detail-hdr');
+  const back=el('button','back-btn','←');on(back,'click',()=>{S.view='admin';render();});
+  const info=el('div');info.appendChild(el('div','detail-title',d.sube));info.appendChild(el('div','detail-sub',`${d.tarih} • ${d.denetci}`));
+  hdr.appendChild(back);hdr.appendChild(info);w.appendChild(hdr);
+  const body=el('div','admin-body');
+  body.appendChild(scoreBox(d.score));
+  // rows
+  const vc=v=>!v||v==='—'?'badge-grey':v.includes('✅')||['Tam','İyi'].includes(v)?'badge-green':v.includes('⚠️')||['Kısmi','Orta'].includes(v)?'badge-gold':'badge-red';
+  const rc=el('div','summary-card');
+  [['Raf & Planogram',d.rafPlanogram],['SKT Durumu',d.sktDurum],['Fiyat & Etiket',d.etiketDurum],['Depo Düzeni',d.depoDurum],['Personel',d.personelDurum],['İade Durumu',d.iadeDurum]].forEach(([l,v])=>{
+    const r=el('div','summary-row');r.appendChild(el('span','summary-key',l));r.appendChild(el('span',`summary-val ${vc(v||'—')}`,v||'—'));rc.appendChild(r);
+  });
+  body.appendChild(rc);
+  if(d.sktListe&&d.sktListe.length>0){const sc=el('div','card-red');sc.appendChild(el('div','skt-box-title',`🔴 SKT Sorunlu Ürünler (${d.sktListe.length} adet)`));d.sktListe.forEach((it,i)=>{const r=el('div');r.style.cssText='font-size:14px;padding:6px 0;border-bottom:1px solid #FFCDD2';r.innerHTML=`<b>${it.urun}</b> — SKT: ${it.skt||'?'}`;sc.appendChild(r);});body.appendChild(sc);}
+  if(d.kritikBulgu){const c=el('div','card-red');c.appendChild(el('div','skt-box-title','🔴 Kritik Bulgular'));const p=el('div');p.style.cssText='font-size:14px;white-space:pre-wrap';p.textContent=d.kritikBulgu;c.appendChild(p);body.appendChild(c);}
+  if(d.yeniAksiyonlar){const c=el('div','card');c.appendChild(el('div','','')).innerHTML='<div style="font-weight:700;color:#2E7D32;margin-bottom:6px">✅ Aksiyon Planı</div>';const p=el('div');p.style.cssText='font-size:14px;white-space:pre-wrap';p.textContent=d.yeniAksiyonlar;c.appendChild(p);body.appendChild(c);}
+  w.appendChild(body);return w;
+}
+
+// ── Form App ───────────────────────────────────────────────────────
+function renderForm(){
+  const u=S.user;const prog=((S.step+1)/STEPS.length)*100;
+  const w=el('div','app');
+
+  // Header
+  const hdr=el('div','hdr');
+  const hl=el('div');
+  hl.appendChild(el('div','hdr-brand','🏪 BİZİM PAZAR'));
+  hl.appendChild(el('div','hdr-sub',u.sube||u.name));
+  const btns=el('div','hdr-btns');
+  if(S.status) btns.appendChild(el('div','hdr-status',S.status));
+  const nb=el('button','hdr-btn','🆕');on(nb,'click',()=>{localStorage.removeItem(LKEY);S.fd=mkFd(u);S.step=0;S.submitted=false;showStatus('🆕 Yeni form');});
+  const lb=el('button','hdr-btn','Çıkış');on(lb,'click',doLogout);
+  btns.appendChild(nb);btns.appendChild(lb);
+  hdr.appendChild(hl);hdr.appendChild(btns);w.appendChild(hdr);
+
+  // Progress
+  const pg=el('div','prog');
+  const pr=el('div','prog-row');pr.appendChild(el('div','prog-name',STEPS[S.step]));pr.appendChild(el('div','prog-count',`${S.step+1}/${STEPS.length}`));
+  pg.appendChild(pr);
+  const pb=el('div','prog-bar');const pf=el('div','prog-fill');pf.style.width=`${prog}%`;pb.appendChild(pf);pg.appendChild(pb);
+  const dots=el('div','prog-dots');
+  STEPS.forEach((_,i)=>{
+    const d=el('button','prog-dot',String(i+1));
+    d.style.background=i<S.step?GOLD:i===S.step?NAVY:'#D0D5DD';
+    on(d,'click',()=>goTo(i));dots.appendChild(d);
+  });
+  pg.appendChild(dots);w.appendChild(pg);
+
+  // Content
+  const steps=[stepGenel,stepRaf,stepSKT,stepEtiket,stepDepo,stepPersonel,stepIade,stepDegerl,stepRapor];
+  const content=el('div','content');content.appendChild(steps[S.step]());w.appendChild(content);
+
+  // Nav
+  const nav=el('div','nav');
+  if(S.step>0){const b=el('button','nav-back','← Geri');on(b,'click',()=>goTo(S.step-1));nav.appendChild(b);}
+  if(S.step<STEPS.length-1){const b=el('button','nav-next','İleri →');on(b,'click',()=>goTo(S.step+1));nav.appendChild(b);}
+  w.appendChild(nav);
+  return w;
 }
 
 // ── Main Render ────────────────────────────────────────────────────
 function render(){
-  const app=document.getElementById('app');
-  if(!app) return;
+  const app=document.getElementById('app');if(!app)return;
   app.innerHTML='';
-
-  let view;
-  if(state.view==='login') view=renderLogin();
-  else if(state.view==='admin') view=renderAdmin();
-  else if(state.view==='detail') view=renderDetail();
-  else view=renderForm();
-
-  app.appendChild(view);
-  if(state.scannerOpen) app.appendChild(renderScanner());
+  let v;
+  if(S.view==='login') v=renderLogin();
+  else if(S.view==='admin') v=renderAdmin();
+  else if(S.view==='detail') v=renderDetail();
+  else v=renderForm();
+  app.appendChild(v);
+  if(S.scanOpen) app.appendChild(renderScanner());
 }
 
-// ── Init ───────────────────────────────────────────────────────────
 function init(){
-  // Check saved session
-  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);state.user=u;if(u.role==='admin'){state.view='admin';loadDenetimler();}else{state.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');state.fd=p.fd||mkFd(u);state.step=p.step||0;}catch(e){state.fd=mkFd(u);}}}}catch(e){}
-
+  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
   render();
-
-  // Hide splash
-  setTimeout(()=>{
-    const sp=document.getElementById('splash');
-    if(sp){sp.classList.add('hide');setTimeout(()=>sp.remove(),400);}
-  },300);
+  setTimeout(()=>{const sp=document.getElementById('splash');if(sp){sp.classList.add('hide');setTimeout(()=>sp.remove(),400);}},400);
 }
 
-// Start when Firebase is ready (or timeout)
 if(window._fbOk!==undefined) init();
-else window.addEventListener('fb-ready', init);
-setTimeout(()=>{if(!document.getElementById('app')?.children.length) init();}, 3000);
+else window.addEventListener('fb-ready',init);
+setTimeout(()=>{if(!document.getElementById('app')?.children.length)init();},3000);
 
-// SW
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
-}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
 </body>
 </html>
