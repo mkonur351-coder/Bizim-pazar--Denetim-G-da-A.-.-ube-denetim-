@@ -10,66 +10,47 @@
 <meta name="apple-mobile-web-app-title" content="BP Denetim">
 <meta name="theme-color" content="#1B3A6B">
 <link rel="manifest" href="/manifest.json">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<script type="module">
-  async function initFB() {
-    try {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-      const { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp }
-        = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-      const cfg = {
-        apiKey: "AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",
-        authDomain: "bizim-pazar-denetim.firebaseapp.com",
-        projectId: "bizim-pazar-denetim",
-        storageBucket: "bizim-pazar-denetim.firebasestorage.app",
-        messagingSenderId: "1029710020793",
-        appId: "1:1029710020793:web:6533143105c1659a981b68"
-      };
-      const app = initializeApp(cfg);
-      window._db = getFirestore(app);
-      window._fc = { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp };
-      window._fbOk = true;
-      window.dispatchEvent(new Event('fb-ready'));
-    } catch(e) {
-      console.warn('Firebase yüklenemedi:', e);
-      window._fbOk = false;
-      window.dispatchEvent(new Event('fb-ready'));
-    }
-  }
-  initFB();
-</script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{background:#F4F6FA;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;overscroll-behavior-y:contain}
 input,textarea,select,button{font-family:inherit}
+#splash{position:fixed;inset:0;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.4s}
+#splash.hide{opacity:0;pointer-events:none}
 .fi{animation:fi 0.2s ease}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-<div id="root" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1B3A6B">
-  <div style="color:white;text-align:center">
-    <div style="font-size:48px;margin-bottom:16px">🏪</div>
-    <div style="font-size:20px;font-weight:800;letter-spacing:1px;margin-bottom:6px">BİZİM PAZAR</div>
-    <div style="font-size:13px;opacity:.7;margin-bottom:24px">Saha Denetim Sistemi</div>
-    <div id="load-msg" style="font-size:14px;opacity:.6">Uygulama yükleniyor...</div>
-  </div>
+
+<!-- Splash -->
+<div id="splash">
+  <div style="font-size:56px;margin-bottom:16px">🏪</div>
+  <div style="color:white;font-size:22px;font-weight:800;letter-spacing:1px">BİZİM PAZAR</div>
+  <div style="color:rgba(255,255,255,0.65);font-size:13px;margin-top:6px">Saha Denetim Sistemi</div>
+  <div id="sp-msg" style="color:rgba(255,255,255,0.45);font-size:12px;margin-top:32px">Yükleniyor...</div>
 </div>
-<script>
-  setTimeout(()=>{const el=document.getElementById('load-msg');if(el&&document.getElementById('root').children.length>0)el.textContent='Lütfen bekleyin...';},2000);
-  setTimeout(()=>{const el=document.getElementById('load-msg');if(el)el.textContent='Hazırlanıyor...';},4000);
-  setTimeout(() => {
-    if (!window._fbOk && window._fbOk !== false) {
-      window._fbOk = false;
-      window.dispatchEvent(new Event('fb-ready'));
-    }
-  }, 5000);
+
+<div id="app"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",authDomain:"bizim-pazar-denetim.firebaseapp.com",projectId:"bizim-pazar-denetim",storageBucket:"bizim-pazar-denetim.firebasestorage.app",messagingSenderId:"1029710020793",appId:"1:1029710020793:web:6533143105c1659a981b68"};
+try{
+  const app=initializeApp(cfg);
+  window._db=getFirestore(app);
+  window._fc={collection,addDoc,getDocs,query,orderBy,where,serverTimestamp};
+  window._fbOk=true;
+}catch(e){window._fbOk=false;}
+window.dispatchEvent(new Event('fb-ready'));
 </script>
-<script id="main-app" type="text/babel">
-const { useState, useEffect, useCallback, useRef } = React;
-const NAVY='#1B3A6B', RED='#C0212B', GOLD='#E8A020', GREEN='#2E7D32';
+
+<!-- App (Vanilla JS - no Babel needed) -->
+<script>
+// ── Constants ──────────────────────────────────────────────────────
+const NAVY='#1B3A6B',RED='#C0212B',GOLD='#E8A020',GREEN='#2E7D32';
 const LKEY='bp-v4';
 const BRANCHES=['Adliye Şubesi','Adana Yolu Şubesi','Cengiz Topel Şubesi','Andırın Caddesi Şubesi','Osmaniye Yolu Şubesi','Merkez Depo'];
 const STEPS=['Genel','Raf','SKT','Etiket','Depo','Personel','İade','Değerl.','Rapor'];
@@ -82,18 +63,43 @@ const USERS=[
   {id:'osmaniye',name:'Osmaniye Yolu Şubesi',role:'personel',pin:'1005',sube:'Osmaniye Yolu Şubesi',label:'🏪 Osmaniye Yolu Şubesi'},
   {id:'depo',name:'Merkez Depo',role:'personel',pin:'1006',sube:'Merkez Depo',label:'🏭 Merkez Depo'},
 ];
-const initFd=()=>({
-  genel:{sube:'',tarih:new Date().toISOString().split('T')[0],bas:'',bitis:'',denetci:''},
-  raf:{planogram:'',marka:'',doluluk:'',fifo:'',notlar:'',photos:[]},
-  skt:{sktVar:'',yakinVar:'',fifo:'',liste:[],notlar:'',photos:[]},
-  etiket:{dogruluk:'',kampanya:'',eksik:'',yanlis:'',notlar:'',photos:[]},
-  depo:{genel:'',fifo:'',transfer:'',iade:'',soguk:'',notlar:'',photos:[]},
-  personel:{unifroma:'',hijyen:'',gorev:'',musteri:'',notlar:'',photos:[]},
-  iade:{var:'',adet:'',firma:'',sure:'',notlar:'',photos:[]},
-  degerl:{kritik:'',onceki:'',yeni:'',genel:'',photos:[]},
-});
 
-function calcScore(fd){
+// ── State Management ───────────────────────────────────────────────
+let state = {
+  view: 'login', // login | form | admin | detail
+  user: null,
+  step: 0,
+  fd: null,
+  status: '',
+  statusTimer: null,
+  denetimler: [],
+  selDenetim: null,
+  loginSel: null,
+  loginPin: '',
+  loginErr: '',
+  adminFilt: '',
+  submitting: false,
+  submitted: false,
+  scannerOpen: false,
+  scannerFor: null,
+  sktItem: {barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''},
+  fbReady: false,
+};
+
+function mkFd(user) {
+  return {
+    genel:{sube:user?.sube||'',tarih:new Date().toISOString().split('T')[0],bas:'',bitis:'',denetci:user?.name||''},
+    raf:{planogram:'',marka:'',doluluk:'',fifo:'',notlar:'',photos:[]},
+    skt:{sktVar:'',yakinVar:'',fifo:'',liste:[],notlar:'',photos:[]},
+    etiket:{dogruluk:'',kampanya:'',eksik:'',yanlis:'',notlar:'',photos:[]},
+    depo:{genel:'',fifo:'',transfer:'',iade:'',soguk:'',notlar:'',photos:[]},
+    personel:{unifroma:'',hijyen:'',gorev:'',musteri:'',notlar:'',photos:[]},
+    iade:{var:'',adet:'',firma:'',sure:'',notlar:'',photos:[]},
+    degerl:{kritik:'',onceki:'',yeni:'',genel:'',photos:[]},
+  };
+}
+
+function calcScore(fd) {
   const v=(val,g,m=[])=>val===''||val===undefined?null:g.includes(val)?1:m.includes(val)?0.6:0;
   const avg=a=>{const f=a.filter(x=>x!==null);return f.length?f.reduce((a,b)=>a+b,0)/f.length:0.7};
   return Math.round(
@@ -108,296 +114,828 @@ function calcScore(fd){
 const sco=s=>s>=80?GREEN:s>=60?GOLD:RED;
 const slbl=s=>s>=80?'✅ BAŞARILI':s>=60?'⚠️ GELİŞTİRİLMELİ':'🔴 KRİTİK';
 
-function compress(file){return new Promise(r=>{const rd=new FileReader();rd.onload=e=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const M=900,s=Math.min(1,M/Math.max(i.width,i.height));c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',0.65));};i.src=e.target.result;};rd.readAsDataURL(file);});}
+function showStatus(msg,ms=2200){
+  state.status=msg;
+  if(state.statusTimer) clearTimeout(state.statusTimer);
+  state.statusTimer=setTimeout(()=>{state.status='';render();},ms);
+  render();
+}
+
+function saveFd(){
+  try{localStorage.setItem(LKEY,JSON.stringify({fd:state.fd,step:state.step}));}catch(e){}
+  showStatus('☁️ Kaydedildi');
+}
+
+function compress(file){
+  return new Promise(r=>{
+    const rd=new FileReader();
+    rd.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        const M=900,s=Math.min(1,M/Math.max(img.width,img.height));
+        c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        r(c.toDataURL('image/jpeg',0.65));
+      };
+      img.src=e.target.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
 
 async function fbSave(data){
-  if(!window._fbOk)return null;
-  try{const{collection,addDoc,serverTimestamp}=window._fc;const ref=await addDoc(collection(window._db,'denetimler'),{...data,ts:serverTimestamp(),ca:new Date().toISOString()});return ref.id;}
-  catch(e){console.error(e);return null;}
+  if(!window._fbOk) return null;
+  try{
+    const{collection,addDoc,serverTimestamp}=window._fc;
+    const ref=await addDoc(collection(window._db,'denetimler'),{...data,ts:serverTimestamp(),ca:new Date().toISOString()});
+    return ref.id;
+  }catch(e){console.error(e);return null;}
 }
+
 async function fbGet(sube=null){
-  if(!window._fbOk)return[];
+  if(!window._fbOk) return[];
   try{
     const{collection,getDocs,query,orderBy,where}=window._fc;
     const q=sube
       ?query(collection(window._db,'denetimler'),where('sube','==',sube),orderBy('ca','desc'))
       :query(collection(window._db,'denetimler'),orderBy('ca','desc'));
-    const s=await getDocs(q);return s.docs.map(d=>({id:d.id,...d.data()}));
+    const snap=await getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
   }catch(e){console.error(e);return[];}
 }
 
-// UI helpers
-function Rad({label,opts,value,onChange,req}){return(<div style={{marginBottom:18}}><div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:8}}>{label}{req&&<span style={{color:RED}}> *</span>}</div><div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{opts.map(o=><button key={o.v} onClick={()=>onChange(o.v)} style={{padding:'9px 14px',borderRadius:22,border:`2px solid ${value===o.v?o.c||NAVY:'#ddd'}`,background:value===o.v?o.c||NAVY:'white',color:value===o.v?'white':'#333',fontSize:13,cursor:'pointer',fontWeight:value===o.v?700:400}}>{o.l}</button>)}</div></div>);}
-function Inp({label,value,onChange,type='text',placeholder,half}){return(<div style={{marginBottom:14,flex:half?1:undefined}}>{label&&<div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:5}}>{label}</div>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||''} style={{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,outline:'none',background:'white'}}/></div>);}
-function Tex({label,value,onChange,placeholder,rows=3}){return(<div style={{marginBottom:14}}>{label&&<div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:5}}>{label}</div>}<textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder||''} rows={rows} style={{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:13,outline:'none',resize:'vertical',background:'white'}}/></div>);}
-function Crd({children,bg='#fff',border='#E0E0E0',accent}){return(<div style={{background:bg,border:`1px solid ${border}`,borderLeft:accent?`4px solid ${accent}`:undefined,borderRadius:12,padding:16,marginBottom:14}}>{children}</div>);}
-function STitle({icon,title,sub}){return(<div style={{marginBottom:20}}><h2 style={{color:NAVY,fontSize:19,fontWeight:800,margin:0}}>{icon} {title}</h2>{sub&&<p style={{color:'#666',fontSize:13,margin:'4px 0 0'}}>{sub}</p>}</div>);}
+// ── HTML Helpers ───────────────────────────────────────────────────
+const h = (tag, attrs={}, ...children) => {
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'className') el.className = v;
+    else el.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c === null || c === undefined) continue;
+    if (typeof c === 'string' || typeof c === 'number') el.appendChild(document.createTextNode(String(c)));
+    else if (c instanceof Node) el.appendChild(c);
+    else if (Array.isArray(c)) c.forEach(x => x && el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+  }
+  return el;
+};
 
-function PhotoPicker({photos=[],onChange}){
-  const ref=useRef(null);
-  const handle=async(e)=>{const f=e.target.files[0];if(!f)return;const d=await compress(f);onChange([...photos,{id:Date.now(),data:d}]);e.target.value='';};
-  return(<div style={{marginTop:16,paddingTop:14,borderTop:'1px solid #eee'}}><div style={{fontSize:13,fontWeight:600,color:'#444',marginBottom:10}}>📸 Fotoğraflar</div><div style={{display:'flex',flexWrap:'wrap',gap:9}}>{photos.map(p=>(<div key={p.id} style={{position:'relative'}}><img src={p.data} style={{width:80,height:80,objectFit:'cover',borderRadius:10,border:'1px solid #ddd',display:'block'}}/><button onClick={()=>onChange(photos.filter(x=>x.id!==p.id))} style={{position:'absolute',top:-7,right:-7,width:22,height:22,borderRadius:'50%',background:RED,color:'white',border:'2px solid white',fontSize:13,cursor:'pointer',lineHeight:1,padding:0,fontWeight:700}}>×</button></div>))}<button onClick={()=>ref.current?.click()} style={{width:80,height:80,borderRadius:10,border:`2px dashed ${GOLD}`,background:'#FFFBEF',color:GOLD,fontSize:28,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>📷</button></div><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:'none'}}/></div>);
+function div(style, ...children) { return h('div', {style}, ...children); }
+function btn(style, onClick, ...children) { return h('button', {style, onClick}, ...children); }
+
+// ── UI Components ──────────────────────────────────────────────────
+function card(children, extra={}) {
+  return div({background:'#fff',border:'1px solid #E0E0E0',borderLeft:extra.accent?`4px solid ${extra.accent}`:undefined,borderRadius:12,padding:16,marginBottom:14,...(extra.style||{})}, ...children);
 }
 
-function BarcodeModal({onClose,onResult}){
-  const fRef=useRef(null);
-  const [st,setSt]=useState('');const [man,setMan]=useState('');const [found,setFound]=useState(null);const [busy,setBusy]=useState(false);
-  const handlePic=async(e)=>{const f=e.target.files[0];if(!f)return;setBusy(true);setSt('🔍 Barkod okunuyor...');
-    try{if(!('BarcodeDetector' in window)){setSt('❌ Desteklenmiyor — manuel girin');setBusy(false);return;}
-      const bm=await createImageBitmap(f);const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf']});const res=await det.detect(bm);
-      if(res.length>0)await look(res[0].rawValue);else{setSt('⚠️ Okunamadı — tekrar deneyin');setBusy(false);}
-    }catch(e){setSt('⚠️ Hata — manuel girin');setBusy(false);}e.target.value='';};
-  const look=async(bc)=>{setBusy(true);setSt('🌐 Ürün aranıyor...');let name='',qty='';
-    try{const r=await fetch(`https://world.openfoodfacts.org/api/v0/product/${bc}.json`);const d=await r.json();
-      if(d.status===1){name=(d.product.product_name_tr||d.product.product_name||'').trim().split(',')[0].trim();qty=d.product.quantity||'';}
-    }catch(e){}setFound({bc,name,qty});setBusy(false);setSt(name?'✅ Ürün bulundu':'⚠️ Bulunamadı — adı girin');};
-  const confirm=()=>{if(found)onResult({barcode:found.bc,name:found.name,quantity:found.qty});onClose();};
-  return(<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.95)',zIndex:2000,display:'flex',flexDirection:'column'}}>
-    <div style={{background:NAVY,padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{color:'white',fontWeight:700,fontSize:16}}>📷 Barkod Tara</span><button onClick={onClose} style={{background:'none',border:'none',color:'white',fontSize:28,cursor:'pointer',lineHeight:1}}>×</button></div>
-    <div style={{flex:1,display:'flex',flexDirection:'column',padding:20,gap:14,overflowY:'auto'}}>
-      {!found&&<div style={{background:'rgba(255,255,255,0.08)',borderRadius:12,padding:16,color:'#ccc',fontSize:13,lineHeight:1.8}}><b style={{color:'white',fontSize:14}}>Nasıl Taranır?</b><br/>1. Fotoğraf Çek butonuna basın<br/>2. Barkodu kameraya getirin<br/>3. Uygulama otomatik okur</div>}
-      {!found&&<button onClick={()=>fRef.current?.click()} disabled={busy} style={{padding:18,background:busy?'#555':GOLD,color:'white',border:'none',borderRadius:14,fontWeight:700,fontSize:18,cursor:busy?'default':'pointer'}}>{busy?'⏳ İşleniyor...':'📷 Fotoğraf Çek'}</button>}
-      <input ref={fRef} type="file" accept="image/*" capture="environment" onChange={handlePic} style={{display:'none'}}/>
-      {st&&<div style={{textAlign:'center',color:st.startsWith('✅')?'#4CAF50':GOLD,fontSize:14,fontWeight:600}}>{st}</div>}
-      {found&&<div style={{background:'white',borderRadius:14,padding:18}}>
-        <div style={{fontSize:11,color:'#888',marginBottom:3}}>Barkod:</div>
-        <div style={{fontWeight:700,fontSize:15,color:NAVY,marginBottom:12,fontFamily:'monospace'}}>{found.bc}</div>
-        <Inp label="Ürün Adı" value={found.name} onChange={v=>setFound({...found,name:v})} placeholder="Ürün adını girin..."/>
-        <Inp label="Gramaj / Miktar" value={found.qty} onChange={v=>setFound({...found,qty:v})} placeholder="500g, 1L..."/>
-        <div style={{display:'flex',gap:10,marginTop:8}}>
-          <button onClick={()=>{setFound(null);setSt('');}} style={{flex:1,padding:12,background:'#eee',color:'#333',border:'none',borderRadius:9,fontWeight:600,cursor:'pointer'}}>↩ Tekrar</button>
-          <button onClick={confirm} style={{flex:2,padding:12,background:GREEN,color:'white',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontSize:15}}>✅ Ekle</button>
-        </div>
-      </div>}
-      {!found&&<><div style={{display:'flex',alignItems:'center',gap:10,color:'#666',fontSize:12}}><div style={{flex:1,height:1,background:'rgba(255,255,255,0.15)'}}/><span>veya</span><div style={{flex:1,height:1,background:'rgba(255,255,255,0.15)'}}/></div>
-      <div><div style={{color:'#aaa',fontSize:12,marginBottom:8}}>Manuel barkod girişi:</div><div style={{display:'flex',gap:8}}><input value={man} onChange={e=>setMan(e.target.value)} placeholder="8690000000000" type="number" onKeyDown={e=>e.key==='Enter'&&look(man.trim())} style={{flex:1,padding:'12px',border:'none',borderRadius:9,fontSize:15,outline:'none',background:'white'}}/><button onClick={()=>look(man.trim())} style={{padding:'12px 18px',background:GOLD,color:'white',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer'}}>Ara</button></div></div></>}
-    </div>
-  </div>);
+function radio(label, opts, value, onChange, req=false) {
+  const container = div({marginBottom:18});
+  const lbl = div({fontSize:13,fontWeight:600,color:'#222',marginBottom:8}, label);
+  if(req) lbl.appendChild(h('span',{style:{color:RED}},' *'));
+  const row = div({display:'flex',gap:8,flexWrap:'wrap'});
+  opts.forEach(o=>{
+    const b = btn({
+      padding:'9px 14px',borderRadius:22,
+      border:`2px solid ${value===o.v?o.c||NAVY:'#ddd'}`,
+      background:value===o.v?o.c||NAVY:'white',
+      color:value===o.v?'white':'#333',
+      fontSize:13,cursor:'pointer',fontWeight:value===o.v?700:400
+    }, ()=>onChange(o.v), o.l);
+    row.appendChild(b);
+  });
+  container.appendChild(lbl);
+  container.appendChild(row);
+  return container;
 }
 
-// Form sections
-function S0({fd,upd,userSube}){const d=fd.genel;return(<div className="fi"><STitle icon="📋" title="Genel Bilgiler" sub="Denetim başlangıç bilgilerini doldurun"/><Crd><div style={{marginBottom:14}}><div style={{fontSize:13,fontWeight:600,color:'#222',marginBottom:5}}>Şube</div>{userSube?<div style={{padding:'11px 12px',background:'#E8EEF7',borderRadius:9,fontSize:14,fontWeight:600,color:NAVY}}>{userSube}</div>:<select value={d.sube} onChange={e=>upd('genel','sube',e.target.value)} style={{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none'}}><option value="">Şube seçin...</option>{BRANCHES.map(b=><option key={b}>{b}</option>)}</select>}</div><Inp label="Denetim Tarihi" type="date" value={d.tarih} onChange={v=>upd('genel','tarih',v)}/><div style={{display:'flex',gap:10}}><Inp label="Başlangıç" type="time" value={d.bas} onChange={v=>upd('genel','bas',v)} half/><Inp label="Bitiş" type="time" value={d.bitis} onChange={v=>upd('genel','bitis',v)} half/></div><Inp label="Denetçi" value={d.denetci} onChange={v=>upd('genel','denetci',v)}/></Crd></div>);}
-
-function S1({fd,upd,updP}){const d=fd.raf;const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];return(<div className="fi"><STitle icon="📦" title="Raf & Planogram" sub="Raf düzeni ve planogram uyumu"/><Crd><Rad label="Planogram Uyumu" opts={o3} value={d.planogram} onChange={v=>upd('raf','planogram',v)} req/><Rad label="Marka Blok Uygulaması" opts={o3} value={d.marka} onChange={v=>upd('raf','marka',v)} req/><Rad label="Raf Doluluk" opts={[{v:'Tam',l:'✅ %90+',c:GREEN},{v:'Kısmi',l:'⚠️ %70-89',c:GOLD},{v:'Yok',l:'🔴 <%70',c:RED}]} value={d.doluluk} onChange={v=>upd('raf','doluluk',v)}/><Rad label="FIFO / Ürün Rotasyonu" opts={o3} value={d.fifo} onChange={v=>upd('raf','fifo',v)} req/><Tex label="Notlar" value={d.notlar} onChange={v=>upd('raf','notlar',v)} placeholder="Raf ile ilgili tespitler..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('raf',p)}/></Crd></div>);}
-
-function S2({fd,setFd,save,step,updP}){
-  const d=fd.skt;
-  const [item,setItem]=useState({barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''});
-  const [sc,setSc]=useState(false);
-  const uf=(f,v)=>{const nd={...fd,skt:{...d,[f]:v}};setFd(nd);save(nd,step);};
-  const add=()=>{if(!item.urun.trim())return;const nd={...fd,skt:{...d,liste:[...(d.liste||[]),{...item,id:Date.now()}]}};setFd(nd);save(nd,step);setItem({barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''});};
-  const del=id=>{const nd={...fd,skt:{...d,liste:d.liste.filter(x=>x.id!==id)}};setFd(nd);save(nd,step);};
-  const onScan=r=>setItem(p=>({...p,barkod:r.barcode,urun:r.name||p.urun,gramaj:r.quantity||p.gramaj}));
-  return(<div className="fi">
-    {sc&&<BarcodeModal onClose={()=>setSc(false)} onResult={onScan}/>}
-    <STitle icon="⏰" title="SKT Kontrolü" sub="Son kullanma tarihi ve FIFO denetimi"/>
-    <Crd><Rad label="SKT Geçmiş Ürün Var Mı?" opts={[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'🔴 Evet',c:RED}]} value={d.sktVar} onChange={v=>uf('sktVar',v)} req/><Rad label="Yakın SKT (7 gün içinde)?" opts={[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}]} value={d.yakinVar} onChange={v=>uf('yakinVar',v)}/><Rad label="FIFO Uygulaması" opts={[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}]} value={d.fifo} onChange={v=>uf('fifo',v)} req/></Crd>
-    <div style={{background:'#FDECEA',border:`1px solid ${RED}`,borderRadius:12,padding:16,marginBottom:14}}>
-      <div style={{fontWeight:700,color:RED,fontSize:15,marginBottom:12}}>🔴 SKT / Sorunlu Ürün Listesi</div>
-      <div style={{background:'white',borderRadius:9,padding:12,marginBottom:10}}>
-        <div style={{display:'flex',gap:8,marginBottom:8,alignItems:'flex-end'}}>
-          <div style={{flex:1}}><div style={{fontSize:12,color:'#666',marginBottom:4}}>Barkod</div><input value={item.barkod} onChange={e=>setItem({...item,barkod:e.target.value})} placeholder="Barkod no" style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/></div>
-          <button onClick={()=>setSc(true)} style={{padding:'9px 14px',background:NAVY,color:'white',border:'none',borderRadius:7,fontSize:13,cursor:'pointer',fontWeight:700,flexShrink:0}}>📷 Tara</button>
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
-          <div style={{gridColumn:'1/-1'}}><div style={{fontSize:12,color:'#666',marginBottom:4}}>Ürün Adı *</div><input value={item.urun} onChange={e=>setItem({...item,urun:e.target.value})} placeholder="Ürün adı" style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/></div>
-          <div><div style={{fontSize:12,color:'#666',marginBottom:4}}>Gramaj</div><input value={item.gramaj} onChange={e=>setItem({...item,gramaj:e.target.value})} placeholder="500g" style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/></div>
-          <div><div style={{fontSize:12,color:'#666',marginBottom:4}}>SKT Tarihi</div><input type="date" value={item.skt} onChange={e=>setItem({...item,skt:e.target.value})} style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/></div>
-          <div><div style={{fontSize:12,color:'#666',marginBottom:4}}>Miktar</div><input value={item.miktar} onChange={e=>setItem({...item,miktar:e.target.value})} placeholder="Adet" style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/></div>
-          <div><div style={{fontSize:12,color:'#666',marginBottom:4}}>Alan / Raf No</div><input value={item.alan} onChange={e=>setItem({...item,alan:e.target.value})} placeholder="Raf 3A..." style={{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}}/></div>
-        </div>
-        <button onClick={add} style={{width:'100%',padding:11,background:RED,color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:14,cursor:'pointer'}}>+ Ürün Ekle</button>
-      </div>
-      {(d.liste||[]).length===0?<div style={{color:'#999',fontSize:13,textAlign:'center',padding:'8px 0'}}>Henüz ürün eklenmedi</div>:(d.liste||[]).map(it=>(<div key={it.id} style={{background:'white',borderRadius:8,padding:'10px 12px',marginBottom:7,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}><div style={{flex:1,minWidth:0}}><div style={{fontWeight:700,fontSize:14}}>{it.urun}{it.gramaj&&<span style={{fontWeight:400,color:'#888',fontSize:12}}> {it.gramaj}</span>}</div><div style={{fontSize:12,color:'#666',marginTop:2}}>{it.barkod&&`${it.barkod} • `}SKT: {it.skt||'?'} • {it.miktar||'?'} adet{it.alan&&` • ${it.alan}`}</div></div><button onClick={()=>del(it.id)} style={{background:'none',border:'none',color:RED,fontSize:22,cursor:'pointer',padding:'0 4px',lineHeight:1}}>×</button></div>))}
-    </div>
-    <Crd><Tex label="Ek Notlar" value={d.notlar} onChange={v=>uf('notlar',v)} placeholder="SKT ile ilgili ek tespitler..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('skt',p)}/></Crd>
-  </div>);
+function textInput(label, value, onChange, opts={}) {
+  const wrap = div({marginBottom:14,flex:opts.half?1:undefined});
+  if(label) wrap.appendChild(div({fontSize:13,fontWeight:600,color:'#222',marginBottom:5}, label));
+  const inp = h('input', {
+    type:opts.type||'text',
+    value:value||'',
+    placeholder:opts.placeholder||'',
+    style:{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,outline:'none',background:'white'}
+  });
+  inp.addEventListener('input', e=>onChange(e.target.value));
+  wrap.appendChild(inp);
+  return wrap;
 }
 
-function S3({fd,upd,updP}){const d=fd.etiket;const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Sorunlu',l:'🔴 Sorunlu',c:RED}];return(<div className="fi"><STitle icon="🏷️" title="Fiyat & Etiket" sub="Fiyat doğruluğu ve kampanya etiket kontrolü"/><Crd><Rad label="Fiyat Etiketi Doğruluğu" opts={o3} value={d.dogruluk} onChange={v=>upd('etiket','dogruluk',v)} req/><Rad label="Kampanya Etiketi" opts={[{v:'Tam',l:'✅ Doğru',c:GREEN},{v:'Kısmi',l:'⚠️ Eksik',c:GOLD},{v:'Sorunlu',l:'🔴 Yanlış',c:RED}]} value={d.kampanya} onChange={v=>upd('etiket','kampanya',v)} req/><div style={{display:'flex',gap:10}}><Inp label="Eksik Etiket (adet)" type="number" value={d.eksik} onChange={v=>upd('etiket','eksik',v)} placeholder="0" half/><Inp label="Yanlış Fiyat (adet)" type="number" value={d.yanlis} onChange={v=>upd('etiket','yanlis',v)} placeholder="0" half/></div><Tex label="Notlar" value={d.notlar} onChange={v=>upd('etiket','notlar',v)} placeholder="Etiket sorunlarını detaylandırın..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('etiket',p)}/></Crd></div>);}
+function textarea(label, value, onChange, opts={}) {
+  const wrap = div({marginBottom:14});
+  if(label) wrap.appendChild(div({fontSize:13,fontWeight:600,color:'#222',marginBottom:5}, label));
+  const ta = h('textarea', {
+    placeholder:opts.placeholder||'',
+    rows:opts.rows||3,
+    style:{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:13,outline:'none',resize:'vertical',background:'white'}
+  });
+  ta.value = value||'';
+  ta.addEventListener('input', e=>onChange(e.target.value));
+  wrap.appendChild(ta);
+  return wrap;
+}
 
-function S4({fd,upd,updP}){const d=fd.depo;const oi=[{v:'İyi',l:'✅ İyi',c:GREEN},{v:'Orta',l:'⚠️ Orta',c:GOLD},{v:'Kötü',l:'🔴 Kötü',c:RED}];const ot=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];return(<div className="fi"><STitle icon="🏭" title="Depo Düzeni" sub="Depo organizasyonu ve transfer disiplini"/><Crd><Rad label="Depo Genel Düzeni" opts={oi} value={d.genel} onChange={v=>upd('depo','genel',v)} req/><Rad label="FIFO Depo Uyumu" opts={ot} value={d.fifo} onChange={v=>upd('depo','fifo',v)} req/><Rad label="Raf-Depo Transfer Disiplini" opts={ot} value={d.transfer} onChange={v=>upd('depo','transfer',v)} req/><Rad label="İade Köşesi Düzeni" opts={oi} value={d.iade} onChange={v=>upd('depo','iade',v)}/><Rad label="Soğuk Zincir / Sütlük Dolabı" opts={oi} value={d.soguk} onChange={v=>upd('depo','soguk',v)}/><Tex label="Notlar" value={d.notlar} onChange={v=>upd('depo','notlar',v)} placeholder="Depo ile ilgili tespitler..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('depo',p)}/></Crd></div>);}
+function photoPicker(photos, onChange) {
+  const wrap = div({marginTop:16,paddingTop:14,borderTop:'1px solid #eee'});
+  wrap.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:10},'📸 Fotoğraflar'));
+  const row = div({display:'flex',flexWrap:'wrap',gap:9});
+  photos.forEach(p=>{
+    const pw = div({position:'relative'});
+    const img = h('img',{src:p.data,style:{width:80,height:80,objectFit:'cover',borderRadius:10,border:'1px solid #ddd',display:'block'}});
+    const del = btn({position:'absolute',top:-7,right:-7,width:22,height:22,borderRadius:'50%',background:RED,color:'white',border:'2px solid white',fontSize:13,cursor:'pointer',lineHeight:1,padding:0,fontWeight:700},
+      ()=>onChange(photos.filter(x=>x.id!==p.id)), '×');
+    pw.appendChild(img); pw.appendChild(del);
+    row.appendChild(pw);
+  });
+  const inp = h('input',{type:'file',accept:'image/*',capture:'environment',style:{display:'none'}});
+  inp.addEventListener('change', async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const data=await compress(f);
+    onChange([...photos,{id:Date.now(),data}]);
+    e.target.value='';
+  });
+  const addBtn = btn({width:80,height:80,borderRadius:10,border:`2px dashed ${GOLD}`,background:'#FFFBEF',color:GOLD,fontSize:28,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'},
+    ()=>inp.click(), '📷');
+  row.appendChild(addBtn);
+  wrap.appendChild(row);
+  wrap.appendChild(inp);
+  return wrap;
+}
 
-function S5({fd,upd,updP}){const d=fd.personel;const ot=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];return(<div className="fi"><STitle icon="👥" title="Personel & Hijyen" sub="Personel görünümü ve görev bilinci"/><Crd><Rad label="Üniforma Uyumu" opts={ot} value={d.unifroma} onChange={v=>upd('personel','unifroma',v)} req/><Rad label="Kişisel Hijyen" opts={ot} value={d.hijyen} onChange={v=>upd('personel','hijyen',v)} req/><Rad label="Görev Bilinci" opts={[{v:'Tam',l:'✅ Yüksek',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Düşük',c:RED}]} value={d.gorev} onChange={v=>upd('personel','gorev',v)} req/><Rad label="Müşteri İlişkileri" opts={[{v:'Tam',l:'✅ İyi',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Kötü',c:RED}]} value={d.musteri} onChange={v=>upd('personel','musteri',v)}/><Tex label="Notlar" value={d.notlar} onChange={v=>upd('personel','notlar',v)} placeholder="Personel ile ilgili tespitler..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('personel',p)}/></Crd></div>);}
+function secTitle(icon, title, sub) {
+  const wrap = div({marginBottom:20});
+  wrap.appendChild(h('h2',{style:{color:NAVY,fontSize:19,fontWeight:800,margin:0}}, `${icon} ${title}`));
+  if(sub) wrap.appendChild(div({color:'#666',fontSize:13,margin:'4px 0 0'}, sub));
+  return wrap;
+}
 
-function S6({fd,upd,updP}){const d=fd.iade;return(<div className="fi"><STitle icon="🔄" title="İade Yönetimi" sub="Depoda bekleyen iade ürün durumu"/><Crd><Rad label="Bekleyen İade Ürün Var Mı?" opts={[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}]} value={d.var} onChange={v=>upd('iade','var',v)} req/>{d.var==='Evet'&&(<><div style={{display:'flex',gap:10}}><Inp label="Ürün Adedi" type="number" value={d.adet} onChange={v=>upd('iade','adet',v)} placeholder="0" half/><Inp label="En Uzun Bekleme (gün)" type="number" value={d.sure} onChange={v=>upd('iade','sure',v)} placeholder="0" half/></div><Tex label="Firmalar / Markalar" value={d.firma} onChange={v=>upd('iade','firma',v)} placeholder="Hangi firmaların ürünleri bekliyor?" rows={2}/></>)}<Tex label="Notlar" value={d.notlar} onChange={v=>upd('iade','notlar',v)} placeholder="İade ile ilgili notlar..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('iade',p)}/></Crd></div>);}
+function scoreBox(score) {
+  const sc2=sco(score);
+  return div({background:sc2,color:'white',borderRadius:14,padding:'22px 20px',textAlign:'center',marginBottom:20},
+    div({fontSize:56,fontWeight:800,lineHeight:1}, String(score)),
+    div({fontSize:14,opacity:.85,margin:'4px 0'}, '/100 Puan'),
+    div({fontSize:15,fontWeight:700}, slbl(score))
+  );
+}
 
-function S7({fd,upd,updP}){const d=fd.degerl,score=calcScore(fd),sc2=sco(score);return(<div className="fi"><STitle icon="⭐" title="Genel Değerlendirme" sub="Denetim sonuç özeti ve aksiyonlar"/><div style={{background:sc2,color:'white',borderRadius:14,padding:'22px 20px',textAlign:'center',marginBottom:20}}><div style={{fontSize:56,fontWeight:800,lineHeight:1}}>{score}</div><div style={{fontSize:14,opacity:.85,margin:'4px 0'}}>/100 Puan</div><div style={{fontSize:15,fontWeight:700}}>{slbl(score)}</div></div><Crd accent={RED}><Tex label="🔴 Kritik Bulgular" value={d.kritik} onChange={v=>upd('degerl','kritik',v)} placeholder="Acil müdahale gerektiren tespitler..."/></Crd><Crd><Tex label="📋 Önceki Aksiyon Durumları" value={d.onceki} onChange={v=>upd('degerl','onceki',v)} placeholder="Önceki aksiyonlar tamamlandı mı?"/><Tex label="✅ Yeni Aksiyonlar" value={d.yeni} onChange={v=>upd('degerl','yeni',v)} placeholder="Alınması gereken aksiyonlar ve sorumluları..."/><Tex label="📝 Genel Notlar" value={d.genel} onChange={v=>upd('degerl','genel',v)} placeholder="Genel değerlendirme..."/><PhotoPicker photos={d.photos||[]} onChange={p=>updP('degerl',p)}/></Crd></div>);}
-
+// ── Report Builder ─────────────────────────────────────────────────
 function buildRpt(fd,score){
   const ns=v=>v||'-',g=fd.genel,sc2=sco(score);
   const sktR=(fd.skt.liste||[]).map(it=>`<tr><td>${ns(it.barkod)}</td><td><b>${it.urun}</b>${it.gramaj?` <small>${it.gramaj}</small>`:''}</td><td>${ns(it.skt)}</td><td>${ns(it.miktar)}</td><td>${ns(it.alan)}</td></tr>`).join('');
   const row=(l,v)=>v?`<div class="row"><span class="lbl">${l}</span><span>${v}</span></div>`:'';
   const pg=(ph=[])=>ph.length>0?`<div class="ph"><div class="pl">📸 Fotoğraflar:</div><div class="pg">${ph.slice(0,6).map(p=>`<img src="${p.data}">`).join('')}</div></div>`:'';
-  return`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Saha Denetim Raporu</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a1a}.hdr{background:#1B3A6B;color:white;padding:18px 24px;text-align:center}.hdr h1{font-size:18px;font-weight:800}.hdr p{font-size:12px;opacity:.75;margin-top:3px}.body{padding:20px 24px}.sb{display:inline-block;background:${sc2};color:white;border-radius:10px;padding:14px 20px;text-align:center;margin:14px 0}.sb .n{font-size:40px;font-weight:800;line-height:1}.sb .lb{font-size:13px;font-weight:700;margin-top:5px}table.m{width:100%;border-collapse:collapse;margin:12px 0}table.m td{border:1px solid #ddd;padding:7px 10px}table.m td:first-child{background:#E8EEF7;font-weight:600;width:38%}.sec{background:#E8A020;color:white;padding:7px 12px;font-weight:700;font-size:12px;margin:14px 0 7px;border-radius:5px}.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.lbl{color:#555}.note{background:#F0F4FA;border-left:3px solid #1B3A6B;padding:7px 10px;font-size:11px;color:#444;margin:6px 0}.rb{background:#FDECEA;border:1px solid #C0212B;border-radius:7px;padding:12px;margin:10px 0}.rb h4{color:#C0212B;margin-bottom:8px}table.dt{width:100%;border-collapse:collapse;font-size:11px}table.dt th{background:#C0212B;color:white;padding:5px 8px;text-align:left}table.dt td{border:1px solid #ddd;padding:5px 8px}table.dt tr:nth-child(even) td{background:#FFF5F5}.ph{margin:10px 0}.pl{font-weight:600;font-size:11px;margin-bottom:7px}.pg{display:flex;flex-wrap:wrap;gap:7px}.pg img{width:150px;height:113px;object-fit:cover;border-radius:6px;border:1px solid #ddd}.sig{margin-top:36px;border-top:2px solid #1B3A6B;padding-top:14px}@media print{body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="hdr"><h1>BİZİM PAZAR GIDA A.Ş.</h1><p>Saha Denetim Raporu</p></div><div class="body"><table class="m"><tr><td>Şube</td><td>${ns(g.sube)}</td></tr><tr><td>Tarih</td><td>${ns(g.tarih)}</td></tr><tr><td>Saat</td><td>${ns(g.bas)} – ${ns(g.bitis)}</td></tr><tr><td>Denetçi</td><td>${ns(g.denetci)}</td></tr></table><div class="sb"><div class="n">${score}</div><div>/100</div><div class="lb">${slbl(score).replace(/[✅⚠️🔴] /,'')}</div></div><div class="sec">RAF & PLANOGRAM</div>${row('Planogram',fd.raf.planogram)}${row('Marka Blok',fd.raf.marka)}${row('Doluluk',fd.raf.doluluk)}${row('FIFO',fd.raf.fifo)}${fd.raf.notlar?`<div class="note">${fd.raf.notlar}</div>`:''}${pg(fd.raf.photos)}<div class="sec">SKT KONTROLÜ</div>${row('SKT Geçmiş',fd.skt.sktVar)}${row('Yakın SKT',fd.skt.yakinVar)}${row('FIFO',fd.skt.fifo)}${sktR?`<div class="rb"><h4>🔴 SKT Sorunlu Ürünler</h4><table class="dt"><tr><th>Barkod</th><th>Ürün</th><th>SKT</th><th>Miktar</th><th>Alan</th></tr>${sktR}</table></div>`:''}${fd.skt.notlar?`<div class="note">${fd.skt.notlar}</div>`:''}${pg(fd.skt.photos)}<div class="sec">FİYAT & ETİKET</div>${row('Doğruluk',fd.etiket.dogruluk)}${row('Kampanya',fd.etiket.kampanya)}<div class="row"><span class="lbl">Eksik Etiket</span><span>${fd.etiket.eksik||'0'} adet</span></div><div class="row"><span class="lbl">Yanlış Fiyat</span><span>${fd.etiket.yanlis||'0'} adet</span></div>${fd.etiket.notlar?`<div class="note">${fd.etiket.notlar}</div>`:''}${pg(fd.etiket.photos)}<div class="sec">DEPO DÜZENİ</div>${row('Genel',fd.depo.genel)}${row('FIFO',fd.depo.fifo)}${row('Transfer',fd.depo.transfer)}${row('İade Köşesi',fd.depo.iade)}${row('Soğuk Zincir',fd.depo.soguk)}${fd.depo.notlar?`<div class="note">${fd.depo.notlar}</div>`:''}${pg(fd.depo.photos)}<div class="sec">PERSONEL & HİJYEN</div>${row('Üniforma',fd.personel.unifroma)}${row('Hijyen',fd.personel.hijyen)}${row('Görev',fd.personel.gorev)}${row('Müşteri',fd.personel.musteri)}${fd.personel.notlar?`<div class="note">${fd.personel.notlar}</div>`:''}${pg(fd.personel.photos)}<div class="sec">İADE YÖNETİMİ</div>${row('Bekleyen',fd.iade.var)}${fd.iade.var==='Evet'?`${row('Adet',fd.iade.adet)}${row('Firmalar',fd.iade.firma)}${row('Bekleme',fd.iade.sure+' gün')}`:''}${fd.iade.notlar?`<div class="note">${fd.iade.notlar}</div>`:''}${pg(fd.iade.photos)}${fd.degerl.kritik?`<div class="rb" style="margin-top:14px"><h4>🔴 Kritik Bulgular</h4><p style="white-space:pre-wrap;font-size:12px;margin-top:5px">${fd.degerl.kritik}</p></div>`:''}${fd.degerl.yeni?`<div class="sec" style="background:#1B3A6B">AKSİYON PLANI</div><p style="white-space:pre-wrap;font-size:12px;padding:6px 0">${fd.degerl.yeni}</p>`:''}${fd.degerl.genel?`<div class="note" style="margin-top:10px">${fd.degerl.genel}</div>`:''}${pg(fd.degerl.photos)}<div class="sig"><div style="font-weight:700;color:#1B3A6B;font-size:13px">${ns(g.denetci)}</div><div style="color:#666;font-size:11px">Operasyon Müdürü | Bizim Pazar Gıda A.Ş.</div></div></div>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(r => console.log('SW registered'))
-      .catch(e => console.log('SW failed:', e));
+  return`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Saha Denetim Raporu</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a1a}.hdr{background:#1B3A6B;color:white;padding:18px 24px;text-align:center}.hdr h1{font-size:18px;font-weight:800}.body{padding:20px 24px}.sb{display:inline-block;background:${sc2};color:white;border-radius:10px;padding:14px 20px;text-align:center;margin:14px 0}.sb .n{font-size:40px;font-weight:800;line-height:1}.sb .lb{font-size:13px;font-weight:700;margin-top:5px}table.m{width:100%;border-collapse:collapse;margin:12px 0}table.m td{border:1px solid #ddd;padding:7px 10px}table.m td:first-child{background:#E8EEF7;font-weight:600;width:38%}.sec{background:#E8A020;color:white;padding:7px 12px;font-weight:700;font-size:12px;margin:14px 0 7px;border-radius:5px}.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.lbl{color:#555}.note{background:#F0F4FA;border-left:3px solid #1B3A6B;padding:7px 10px;font-size:11px;color:#444;margin:6px 0}.rb{background:#FDECEA;border:1px solid #C0212B;border-radius:7px;padding:12px;margin:10px 0}.rb h4{color:#C0212B;margin-bottom:8px}table.dt{width:100%;border-collapse:collapse;font-size:11px}table.dt th{background:#C0212B;color:white;padding:5px 8px;text-align:left}table.dt td{border:1px solid #ddd;padding:5px 8px}.ph{margin:10px 0}.pl{font-weight:600;font-size:11px;margin-bottom:7px}.pg{display:flex;flex-wrap:wrap;gap:7px}.pg img{width:150px;height:113px;object-fit:cover;border-radius:6px;border:1px solid #ddd}.sig{margin-top:36px;border-top:2px solid #1B3A6B;padding-top:14px}@media print{body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="hdr"><h1>BİZİM PAZAR GIDA A.Ş.</h1><p>Saha Denetim Raporu</p></div><div class="body"><table class="m"><tr><td>Şube</td><td>${ns(g.sube)}</td></tr><tr><td>Tarih</td><td>${ns(g.tarih)}</td></tr><tr><td>Saat</td><td>${ns(g.bas)} – ${ns(g.bitis)}</td></tr><tr><td>Denetçi</td><td>${ns(g.denetci)}</td></tr></table><div class="sb"><div class="n">${score}</div><div>/100</div><div class="lb">${slbl(score).replace(/[✅⚠️🔴] /,'')}</div></div>${renderSections(fd,row,sktR,pg)}<div class="sig"><div style="font-weight:700;color:#1B3A6B;font-size:13px">${ns(g.denetci)}</div><div style="color:#666;font-size:11px">Operasyon Müdürü | Bizim Pazar Gıda A.Ş.</div></div></div></body></html>`;
+}
+
+function renderSections(fd,row,sktR,pg){
+  return `<div class="sec">RAF & PLANOGRAM</div>${row('Planogram',fd.raf.planogram)}${row('Marka Blok',fd.raf.marka)}${row('Doluluk',fd.raf.doluluk)}${row('FIFO',fd.raf.fifo)}${fd.raf.notlar?`<div class="note">${fd.raf.notlar}</div>`:''}${pg(fd.raf.photos)}<div class="sec">SKT KONTROLÜ</div>${row('SKT Geçmiş',fd.skt.sktVar)}${row('Yakın SKT',fd.skt.yakinVar)}${row('FIFO',fd.skt.fifo)}${sktR?`<div class="rb"><h4>🔴 SKT Sorunlu Ürünler</h4><table class="dt"><tr><th>Barkod</th><th>Ürün</th><th>SKT</th><th>Miktar</th><th>Alan</th></tr>${sktR}</table></div>`:''}${fd.skt.notlar?`<div class="note">${fd.skt.notlar}</div>`:''}${pg(fd.skt.photos)}<div class="sec">FİYAT & ETİKET</div>${row('Doğruluk',fd.etiket.dogruluk)}${row('Kampanya',fd.etiket.kampanya)}<div class="row"><span class="lbl">Eksik Etiket</span><span>${fd.etiket.eksik||'0'} adet</span></div><div class="row"><span class="lbl">Yanlış Fiyat</span><span>${fd.etiket.yanlis||'0'} adet</span></div>${fd.etiket.notlar?`<div class="note">${fd.etiket.notlar}</div>`:''}${pg(fd.etiket.photos)}<div class="sec">DEPO DÜZENİ</div>${row('Genel',fd.depo.genel)}${row('FIFO',fd.depo.fifo)}${row('Transfer',fd.depo.transfer)}${row('İade Köşesi',fd.depo.iade)}${row('Soğuk Zincir',fd.depo.soguk)}${fd.depo.notlar?`<div class="note">${fd.depo.notlar}</div>`:''}${pg(fd.depo.photos)}<div class="sec">PERSONEL & HİJYEN</div>${row('Üniforma',fd.personel.unifroma)}${row('Hijyen',fd.personel.hijyen)}${row('Görev',fd.personel.gorev)}${row('Müşteri',fd.personel.musteri)}${fd.personel.notlar?`<div class="note">${fd.personel.notlar}</div>`:''}${pg(fd.personel.photos)}<div class="sec">İADE YÖNETİMİ</div>${row('Bekleyen',fd.iade.var)}${fd.iade.var==='Evet'?`${row('Adet',fd.iade.adet)}${row('Firmalar',fd.iade.firma)}${row('Bekleme',fd.iade.sure+' gün')}`:''}${fd.iade.notlar?`<div class="note">${fd.iade.notlar}</div>`:''}${pg(fd.iade.photos)}${fd.degerl.kritik?`<div class="rb" style="margin-top:14px"><h4>🔴 Kritik Bulgular</h4><p style="white-space:pre-wrap;font-size:12px;margin-top:5px">${fd.degerl.kritik}</p></div>`:''}${fd.degerl.yeni?`<div class="sec" style="background:#1B3A6B">AKSİYON PLANI</div><p style="white-space:pre-wrap;font-size:12px;padding:6px 0">${fd.degerl.yeni}</p>`:''}${fd.degerl.genel?`<div class="note" style="margin-top:10px">${fd.degerl.genel}</div>`:''}${pg(fd.degerl.photos)}`;
+}
+
+// ── Views ──────────────────────────────────────────────────────────
+
+function renderLogin() {
+  const wrap = div({minHeight:'100vh',background:NAVY,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20});
+  const hero = div({marginBottom:24,textAlign:'center'},
+    div({fontSize:52,marginBottom:8},'🏪'),
+    div({color:'white',fontSize:22,fontWeight:800},'BİZİM PAZAR'),
+    div({color:'rgba(255,255,255,0.6)',fontSize:13,marginTop:4},'Saha Denetim Sistemi')
+  );
+  const box = div({background:'white',borderRadius:20,padding:24,width:'100%',maxWidth:380});
+  box.appendChild(div({fontSize:15,fontWeight:700,color:NAVY,marginBottom:16},'Giriş Yap'));
+  box.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:8},'Kullanıcı'));
+  const userList = div({display:'flex',flexDirection:'column',gap:7,marginBottom:16});
+  USERS.forEach(u=>{
+    const b = btn({
+      padding:'11px 14px',borderRadius:10,
+      border:`2px solid ${state.loginSel===u.id?u.role==='admin'?GOLD:NAVY:'#e0e0e0'}`,
+      background:state.loginSel===u.id?u.role==='admin'?`${GOLD}18`:`${NAVY}10`:'white',
+      color:state.loginSel===u.id?u.role==='admin'?GOLD:NAVY:'#555',
+      fontSize:14,cursor:'pointer',fontWeight:state.loginSel===u.id?700:400,textAlign:'left',width:'100%'
+    }, ()=>{state.loginSel=u.id;state.loginPin='';state.loginErr='';render();}, u.label);
+    userList.appendChild(b);
   });
-}
-</script>
-</body></html>`;
-}
-
-function S8({fd,onPDF,onWord,onSubmit,submitting,submitted}){
-  const score=calcScore(fd),sc2=sco(score),g=fd.genel;
-  const tp=[fd.raf,fd.skt,fd.etiket,fd.depo,fd.personel,fd.iade,fd.degerl].reduce((n,s)=>n+(s.photos||[]).length,0);
-  const rows=[['Raf & Planogram',fd.raf.planogram],['SKT Durumu',fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—'],['Fiyat & Etiket',fd.etiket.dogruluk],['Depo Düzeni',fd.depo.genel],['Personel',fd.personel.unifroma],['İade Durumu',fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—']];
-  const vc=v=>!v||v==='—'?'#aaa':v.includes('✅')||['Tam','İyi'].includes(v)?GREEN:v.includes('⚠️')||['Kısmi','Orta'].includes(v)?GOLD:RED;
-  return(<div className="fi"><STitle icon="📄" title="Rapor & Gönder" sub="Özeti görüntüle, sisteme kaydet ve indir"/>
-    <div style={{background:`${NAVY}12`,border:`1px solid ${NAVY}30`,borderRadius:12,padding:16,marginBottom:14}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div><div style={{fontWeight:700,color:NAVY,fontSize:15}}>{g.sube||'Şube belirtilmedi'}</div><div style={{fontSize:12,color:'#555',marginTop:2}}>{g.tarih} • {g.bas||'--:--'} – {g.bitis||'--:--'}</div><div style={{fontSize:12,color:'#555'}}>{g.denetci}</div>{tp>0&&<div style={{fontSize:12,color:GOLD,marginTop:2}}>📸 {tp} fotoğraf</div>}</div>
-        <div style={{textAlign:'center',background:sc2,color:'white',borderRadius:12,padding:'10px 16px',minWidth:72}}><div style={{fontSize:32,fontWeight:800,lineHeight:1}}>{score}</div><div style={{fontSize:11}}>/100</div></div>
-      </div>
-      <div style={{marginTop:10,fontSize:13,fontWeight:700,color:sc2}}>{slbl(score)}</div>
-    </div>
-    <Crd>{rows.map(([l,v],i)=>(<div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'}}><span style={{fontSize:14,color:'#333'}}>{l}</span><span style={{fontSize:13,fontWeight:700,color:vc(v)}}>{v||'—'}</span></div>))}</Crd>
-    {(fd.skt.liste||[]).length>0&&<Crd bg="#FDECEA" border={RED}><div style={{fontWeight:700,color:RED,marginBottom:8}}>🔴 SKT Sorunlu Ürünler ({fd.skt.liste.length} adet)</div>{fd.skt.liste.map((it,i)=>(<div key={i} style={{fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'}}><b>{it.urun}</b>{it.gramaj&&<span style={{color:'#888'}}> {it.gramaj}</span>} — SKT: {it.skt||'?'} — {it.miktar||'?'} adet</div>))}</Crd>}
-    <div style={{display:'flex',flexDirection:'column',gap:12,marginTop:24}}>
-      {!submitted?<button onClick={onSubmit} disabled={submitting} style={{padding:16,background:submitting?'#aaa':GREEN,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:16,cursor:submitting?'default':'pointer',boxShadow:submitting?'none':'0 3px 10px rgba(46,125,50,0.35)'}}>{submitting?'⏳ Gönderiliyor...':'☁️ Sisteme Kaydet & Gönder'}</button>:<div style={{padding:16,background:'#E8F5E9',border:`1px solid ${GREEN}`,borderRadius:12,textAlign:'center',color:GREEN,fontWeight:700,fontSize:15}}>✅ Denetim sisteme kaydedildi!</div>}
-      <button onClick={onPDF} style={{padding:14,background:RED,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer'}}>📄 PDF İndir</button>
-      <button onClick={onWord} style={{padding:14,background:NAVY,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer'}}>📝 Word İndir</button>
-    </div>
-  </div>);
+  box.appendChild(userList);
+  if(state.loginSel) {
+    const pinWrap = div({marginBottom:16});
+    pinWrap.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:8},'PIN'));
+    const pinInp = h('input',{
+      type:'password',placeholder:'••••',
+      style:{width:'100%',padding:'12px',border:`1.5px solid ${state.loginErr?RED:'#ddd'}`,borderRadius:9,fontSize:18,outline:'none',letterSpacing:6,textAlign:'center'}
+    });
+    pinInp.value = state.loginPin;
+    pinInp.addEventListener('input', e=>{state.loginPin=e.target.value;});
+    pinInp.addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
+    pinWrap.appendChild(pinInp);
+    box.appendChild(pinWrap);
+  }
+  if(state.loginErr) box.appendChild(div({color:RED,fontSize:13,marginBottom:12,textAlign:'center'}, state.loginErr));
+  box.appendChild(btn({width:'100%',padding:14,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'}, doLogin, 'Giriş Yap →'));
+  wrap.appendChild(hero);
+  wrap.appendChild(box);
+  wrap.appendChild(div({color:'rgba(255,255,255,0.3)',fontSize:11,marginTop:20},'Bizim Pazar Gıda A.Ş.'));
+  return wrap;
 }
 
-// Login
-function Login({onLogin}){
-  const [sel,setSel]=useState(null);const [pin,setPin]=useState('');const [err,setErr]=useState('');
-  const go=()=>{if(!sel){setErr('Kullanıcı seçin');return;}const u=USERS.find(x=>x.id===sel);if(u&&u.pin===pin){onLogin(u);setErr('');}else{setErr('❌ PIN hatalı');setPin('');}};
-  return(<div style={{minHeight:'100vh',background:NAVY,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20}}>
-    <div style={{marginBottom:24,textAlign:'center'}}><div style={{fontSize:52,marginBottom:8}}>🏪</div><div style={{color:'white',fontSize:22,fontWeight:800}}>BİZİM PAZAR</div><div style={{color:'rgba(255,255,255,0.6)',fontSize:13,marginTop:4}}>Saha Denetim Sistemi</div></div>
-    <div style={{background:'white',borderRadius:20,padding:24,width:'100%',maxWidth:380}}>
-      <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:16}}>Giriş Yap</div>
-      <div style={{marginBottom:16}}>
-        <div style={{fontSize:13,fontWeight:600,color:'#444',marginBottom:8}}>Kullanıcı</div>
-        <div style={{display:'flex',flexDirection:'column',gap:7}}>
-          {USERS.map(u=>(<button key={u.id} onClick={()=>{setSel(u.id);setErr('');setPin('');}} style={{padding:'11px 14px',borderRadius:10,border:`2px solid ${sel===u.id?u.role==='admin'?GOLD:NAVY:'#e0e0e0'}`,background:sel===u.id?u.role==='admin'?`${GOLD}18`:`${NAVY}10`:'white',color:sel===u.id?u.role==='admin'?GOLD:NAVY:'#555',fontSize:14,cursor:'pointer',fontWeight:sel===u.id?700:400,textAlign:'left'}}>{u.label}</button>))}
-        </div>
-      </div>
-      {sel&&<div style={{marginBottom:16}}><div style={{fontSize:13,fontWeight:600,color:'#444',marginBottom:8}}>PIN</div><input type="password" value={pin} onChange={e=>setPin(e.target.value)} placeholder="••••" onKeyDown={e=>e.key==='Enter'&&go()} style={{width:'100%',padding:'12px',border:`1.5px solid ${err?RED:'#ddd'}`,borderRadius:9,fontSize:18,outline:'none',letterSpacing:6,textAlign:'center'}}/></div>}
-      {err&&<div style={{color:RED,fontSize:13,marginBottom:12,textAlign:'center'}}>{err}</div>}
-      <button onClick={go} style={{width:'100%',padding:14,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'}}>Giriş Yap →</button>
-    </div>
-    <div style={{color:'rgba(255,255,255,0.3)',fontSize:11,marginTop:20}}>Bizim Pazar Gıda A.Ş.</div>
-  </div>);
+function doLogin(){
+  if(!state.loginSel){state.loginErr='Kullanıcı seçin';render();return;}
+  const u=USERS.find(x=>x.id===state.loginSel);
+  if(u&&u.pin===state.loginPin){
+    state.user=u;state.loginErr='';
+    localStorage.setItem('bp-user',JSON.stringify(u));
+    if(u.role==='admin'){state.view='admin';loadDenetimler();}
+    else{
+      state.view='form';state.step=0;
+      try{const s=localStorage.getItem(LKEY);if(s){const p=JSON.parse(s);state.fd=p.fd||mkFd(u);state.step=p.step||0;}else state.fd=mkFd(u);}
+      catch(e){state.fd=mkFd(u);}
+    }
+    render();
+  }else{state.loginErr='❌ PIN hatalı';state.loginPin='';render();}
 }
 
-// Admin Panel
-function AdminPanel({user,onLogout}){
-  const [list,setList]=useState([]);const [loading,setLoading]=useState(true);const [sel,setSel]=useState(null);const [filt,setFilt]=useState('');
-  useEffect(()=>{load();},[]);
-  const load=async()=>{setLoading(true);const d=await fbGet();setList(d);setLoading(false);};
-  const filtered=filt?list.filter(d=>d.sube===filt):list;
+async function loadDenetimler(){
+  state.denetimler=await fbGet(state.adminFilt||null);
+  render();
+}
+
+function renderAdmin(){
+  const list=state.denetimler;
   const bugun=new Date().toISOString().split('T')[0];
   const today=list.filter(d=>d.tarih===bugun);
   const crit=list.filter(d=>d.score<60);
-  if(sel) return <Detay d={sel} onBack={()=>setSel(null)}/>;
-  return(<div style={{fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'}}>
-    <div style={{background:NAVY,color:'white',padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'}}>
-      <div><div style={{fontWeight:800,fontSize:15}}>👑 ADMİN PANELİ</div><div style={{fontSize:11,opacity:.7,marginTop:1}}>Bizim Pazar — Tüm Şubeler</div></div>
-      <button onClick={onLogout} style={{background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:8,padding:'6px 12px',fontSize:12,cursor:'pointer',fontWeight:600}}>Çıkış</button>
-    </div>
-    <div style={{padding:'16px 16px 100px'}}>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:20}}>
-        {[[' 📋','Toplam',list.length,'denetim',NAVY],['📅','Bugün',today.length,'denetim',GREEN],['🔴','Kritik',crit.length,'<60 puan',RED]].map(([ic,lb,val,sub,bg])=>(<div key={lb} style={{background:'white',borderRadius:12,padding:'14px 10px',textAlign:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}><div style={{fontSize:20}}>{ic}</div><div style={{fontSize:24,fontWeight:800,color:bg,lineHeight:1.2}}>{val}</div><div style={{fontSize:11,color:'#666',marginTop:2}}>{lb}</div><div style={{fontSize:10,color:'#aaa'}}>{sub}</div></div>))}
-      </div>
-      <div style={{background:'white',borderRadius:12,padding:16,marginBottom:16,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
-        <div style={{fontWeight:700,color:NAVY,fontSize:15,marginBottom:12}}>📊 Şube Ortalama Puanları</div>
-        {BRANCHES.map(sube=>{const sd=list.filter(d=>d.sube===sube);const avg=sd.length?Math.round(sd.reduce((a,d)=>a+d.score,0)/sd.length):null;return(<div key={sube} style={{display:'flex',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f0f0f0'}}><div style={{flex:1,fontSize:13,color:'#333'}}>{sube}</div><div style={{fontSize:12,color:'#aaa',marginRight:10}}>{sd.length} denetim</div>{avg!==null?<div style={{background:sco(avg),color:'white',borderRadius:8,padding:'3px 10px',fontSize:13,fontWeight:700,minWidth:44,textAlign:'center'}}>{avg}</div>:<div style={{color:'#ccc',fontSize:12}}>—</div>}</div>);})}
-      </div>
-      <select value={filt} onChange={e=>setFilt(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none',marginBottom:12}}><option value="">Tüm Şubeler</option>{BRANCHES.map(b=><option key={b}>{b}</option>)}</select>
-      <div style={{fontWeight:700,color:NAVY,fontSize:15,marginBottom:10}}>📋 Denetim Kayıtları{filt&&` — ${filt}`}</div>
-      {loading?<div style={{textAlign:'center',padding:40,color:'#aaa'}}>⏳ Yükleniyor...</div>:filtered.length===0?<div style={{textAlign:'center',padding:40,color:'#aaa',background:'white',borderRadius:12}}>Henüz kayıt yok</div>:filtered.map(d=>(<button key={d.id} onClick={()=>setSel(d)} style={{width:'100%',background:'white',border:'none',borderRadius:12,padding:'14px 16px',marginBottom:10,cursor:'pointer',textAlign:'left',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div style={{fontWeight:700,fontSize:14,color:NAVY}}>{d.sube}</div><div style={{fontSize:12,color:'#666',marginTop:3}}>{d.tarih} • {d.denetci}</div>{d.kritikBulgu&&<div style={{fontSize:11,color:RED,marginTop:2}}>⚠️ Kritik bulgu var</div>}</div><div style={{textAlign:'center',background:sco(d.score),color:'white',borderRadius:10,padding:'8px 12px',minWidth:56}}><div style={{fontSize:22,fontWeight:800,lineHeight:1}}>{d.score}</div><div style={{fontSize:10}}>/100</div></div></button>))}
-      <button onClick={load} style={{width:'100%',padding:12,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:600,fontSize:14,cursor:'pointer',marginTop:8}}>🔄 Yenile</button>
-    </div>
-  </div>);
+  const filtered=state.adminFilt?list.filter(d=>d.sube===state.adminFilt):list;
+
+  const wrap = div({fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'});
+
+  // Header
+  const hdr = div({background:NAVY,color:'white',padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'});
+  hdr.appendChild(div({},div({fontWeight:800,fontSize:15},'👑 ADMİN PANELİ'),div({fontSize:11,opacity:.7,marginTop:1},'Bizim Pazar — Tüm Şubeler')));
+  hdr.appendChild(btn({background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:8,padding:'6px 12px',fontSize:12,cursor:'pointer',fontWeight:600},doLogout,'Çıkış'));
+  wrap.appendChild(hdr);
+
+  const body = div({padding:'16px 16px 100px'});
+
+  // Stats
+  const stats = div({display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:20});
+  [[' 📋','Toplam',list.length,'denetim',NAVY],['📅','Bugün',today.length,'denetim',GREEN],['🔴','Kritik',crit.length,'<60 puan',RED]].forEach(([ic,lb,val,sub,bg])=>{
+    const c = div({background:'white',borderRadius:12,padding:'14px 10px',textAlign:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'});
+    c.appendChild(div({fontSize:20},ic));
+    c.appendChild(div({fontSize:24,fontWeight:800,color:bg,lineHeight:1.2},String(val)));
+    c.appendChild(div({fontSize:11,color:'#666',marginTop:2},lb));
+    c.appendChild(div({fontSize:10,color:'#aaa'},sub));
+    stats.appendChild(c);
+  });
+  body.appendChild(stats);
+
+  // Şube puanları
+  const spCard = div({background:'white',borderRadius:12,padding:16,marginBottom:16,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'});
+  spCard.appendChild(div({fontWeight:700,color:NAVY,fontSize:15,marginBottom:12},'📊 Şube Ortalama Puanları'));
+  BRANCHES.forEach(sube=>{
+    const sd=list.filter(d=>d.sube===sube);
+    const avg=sd.length?Math.round(sd.reduce((a,d)=>a+d.score,0)/sd.length):null;
+    const row = div({display:'flex',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f0f0f0'});
+    row.appendChild(div({flex:1,fontSize:13,color:'#333'},sube));
+    row.appendChild(div({fontSize:12,color:'#aaa',marginRight:10},`${sd.length} denetim`));
+    if(avg!==null) row.appendChild(div({background:sco(avg),color:'white',borderRadius:8,padding:'3px 10px',fontSize:13,fontWeight:700,minWidth:44,textAlign:'center'},String(avg)));
+    else row.appendChild(div({color:'#ccc',fontSize:12},'—'));
+    spCard.appendChild(row);
+  });
+  body.appendChild(spCard);
+
+  // Filter
+  const sel = h('select',{style:{width:'100%',padding:'10px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none',marginBottom:12}});
+  sel.appendChild(h('option',{value:''},'Tüm Şubeler'));
+  BRANCHES.forEach(b=>{const o=h('option',{value:b},b);if(state.adminFilt===b)o.selected=true;sel.appendChild(o);});
+  sel.addEventListener('change',e=>{state.adminFilt=e.target.value;loadDenetimler();});
+  body.appendChild(sel);
+
+  body.appendChild(div({fontWeight:700,color:NAVY,fontSize:15,marginBottom:10},`📋 Denetim Kayıtları${state.adminFilt?' — '+state.adminFilt:''}`));
+
+  if(filtered.length===0){
+    body.appendChild(div({textAlign:'center',padding:40,color:'#aaa',background:'white',borderRadius:12},'Henüz kayıt yok'));
+  } else {
+    filtered.forEach(d=>{
+      const row = btn({width:'100%',background:'white',border:'none',borderRadius:12,padding:'14px 16px',marginBottom:10,cursor:'pointer',textAlign:'left',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center'},
+        ()=>{state.selDenetim=d;state.view='detail';render();});
+      const left = div({});
+      left.appendChild(div({fontWeight:700,fontSize:14,color:NAVY},d.sube));
+      left.appendChild(div({fontSize:12,color:'#666',marginTop:3},`${d.tarih} • ${d.denetci}`));
+      if(d.kritikBulgu) left.appendChild(div({fontSize:11,color:RED,marginTop:2},'⚠️ Kritik bulgu var'));
+      const sc2=sco(d.score);
+      const badge=div({textAlign:'center',background:sc2,color:'white',borderRadius:10,padding:'8px 12px',minWidth:56});
+      badge.appendChild(div({fontSize:22,fontWeight:800,lineHeight:1},String(d.score)));
+      badge.appendChild(div({fontSize:10},'/100'));
+      row.appendChild(left);row.appendChild(badge);
+      body.appendChild(row);
+    });
+  }
+
+  body.appendChild(btn({width:'100%',padding:12,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:600,fontSize:14,cursor:'pointer',marginTop:8},loadDenetimler,'🔄 Yenile'));
+  wrap.appendChild(body);
+  return wrap;
 }
 
-function Detay({d,onBack}){
+function renderDetail(){
+  const d=state.selDenetim;
   const sc2=sco(d.score);
   const rows=[['Raf & Planogram',d.rafPlanogram],['SKT Durumu',d.sktDurum],['Fiyat & Etiket',d.etiketDurum],['Depo Düzeni',d.depoDurum],['Personel',d.personelDurum],['İade Durumu',d.iadeDurum]];
   const vc=v=>!v||v==='—'?'#aaa':v.includes('✅')||['Tam','İyi'].includes(v)?GREEN:v.includes('⚠️')||['Kısmi','Orta'].includes(v)?GOLD:RED;
-  return(<div style={{fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'}}>
-    <div style={{background:NAVY,color:'white',padding:'14px 16px',display:'flex',alignItems:'center',gap:12,position:'sticky',top:0,zIndex:100}}><button onClick={onBack} style={{background:'none',border:'none',color:'white',fontSize:24,cursor:'pointer',padding:0}}>←</button><div><div style={{fontWeight:800,fontSize:15}}>{d.sube}</div><div style={{fontSize:11,opacity:.7}}>{d.tarih} • {d.denetci}</div></div></div>
-    <div style={{padding:'16px 16px 80px'}}>
-      <div style={{background:sc2,color:'white',borderRadius:14,padding:'20px',textAlign:'center',marginBottom:16}}><div style={{fontSize:50,fontWeight:800,lineHeight:1}}>{d.score}</div><div style={{fontSize:14,opacity:.85}}>/100 Puan</div><div style={{fontSize:14,fontWeight:700,marginTop:6}}>{slbl(d.score)}</div></div>
-      <Crd>{rows.map(([l,v],i)=>(<div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'}}><span style={{fontSize:14,color:'#333'}}>{l}</span><span style={{fontSize:13,fontWeight:700,color:vc(v)}}>{v||'—'}</span></div>))}</Crd>
-      {d.sktListe&&d.sktListe.length>0&&<Crd bg="#FDECEA" border={RED}><div style={{fontWeight:700,color:RED,marginBottom:8}}>🔴 SKT Sorunlu Ürünler ({d.sktListe.length} adet)</div>{d.sktListe.map((it,i)=>(<div key={i} style={{fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'}}><b>{it.urun}</b>{it.gramaj&&<span style={{color:'#888'}}> {it.gramaj}</span>} — SKT: {it.skt||'?'} — {it.miktar||'?'} adet</div>))}</Crd>}
-      {d.kritikBulgu&&<Crd bg="#FDECEA" border={RED} accent={RED}><div style={{fontWeight:700,color:RED,marginBottom:6}}>🔴 Kritik Bulgular</div><div style={{fontSize:13,whiteSpace:'pre-wrap'}}>{d.kritikBulgu}</div></Crd>}
-      {d.yeniAksiyonlar&&<Crd accent={GREEN}><div style={{fontWeight:700,color:GREEN,marginBottom:6}}>✅ Aksiyon Planı</div><div style={{fontSize:13,whiteSpace:'pre-wrap'}}>{d.yeniAksiyonlar}</div></Crd>}
-      {d.notlar&&<Crd><div style={{fontWeight:600,color:'#555',marginBottom:6}}>📝 Genel Notlar</div><div style={{fontSize:13,whiteSpace:'pre-wrap'}}>{d.notlar}</div></Crd>}
-    </div>
-  </div>);
-}
 
-// Form App
-function FormApp({user,onLogout}){
-  const mkFd=()=>{const f=initFd();f.genel.sube=user.sube||'';f.genel.denetci=user.name;return f;};
-  const [step,setStep]=useState(0);
-  const [fd,setFd]=useState(()=>{try{const s=localStorage.getItem(LKEY);if(s){const p=JSON.parse(s);return p.fd||mkFd();}}catch(e){}return mkFd();});
-  const [status,setStatus]=useState('');const [sub,setSub]=useState(false);const [done,setDone]=useState(false);
-  const showS=(m,ms=2000)=>{setStatus(m);setTimeout(()=>setStatus(''),ms);};
-  const save=useCallback((data,s)=>{try{localStorage.setItem(LKEY,JSON.stringify({fd:data,step:s}));setStatus('☁️ Kaydedildi');setTimeout(()=>setStatus(''),1800);}catch(e){setStatus('⚠️ Hata');}}, []);
-  useEffect(()=>{try{const s=localStorage.getItem(LKEY);if(s){const p=JSON.parse(s);if(p.step) setStep(p.step);}}catch(e){}}, []);
-  const upd=(sec,f,v)=>{const nd={...fd,[sec]:{...fd[sec],[f]:v}};setFd(nd);save(nd,step);};
-  const updP=(sec,p)=>{const nd={...fd,[sec]:{...fd[sec],photos:p}};setFd(nd);save(nd,step);};
-  const goTo=ns=>{setStep(ns);save(fd,ns);};
-  const onSub=async()=>{
-    setSub(true);const score=calcScore(fd);
-    const pl={sube:fd.genel.sube||user.sube||'',tarih:fd.genel.tarih,denetci:fd.genel.denetci,score,rafPlanogram:fd.raf.planogram,sktDurum:fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—',etiketDurum:fd.etiket.dogruluk,depoDurum:fd.depo.genel,personelDurum:fd.personel.unifroma,iadeDurum:fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—',sktListe:fd.skt.liste||[],kritikBulgu:fd.degerl.kritik||'',yeniAksiyonlar:fd.degerl.yeni||'',notlar:fd.degerl.genel||'',userId:user.id};
-    const id=await fbSave(pl);setSub(false);
-    if(id){setDone(true);showS('✅ Sisteme kaydedildi!',4000);}
-    else showS('⚠️ Bağlantı hatası',3000);
-  };
-  const onPDF=()=>{const h=buildRpt(fd,calcScore(fd));const b=new Blob([h],{type:'text/html;charset=utf-8'});const u=URL.createObjectURL(b);const w=window.open(u,'_blank');if(w)w.addEventListener('load',()=>setTimeout(()=>w.print(),500));setTimeout(()=>URL.revokeObjectURL(u),30000);};
-  const onWord=()=>{const h=buildRpt(fd,calcScore(fd));const b=new Blob(['\ufeff'+h],{type:'application/msword;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`Denetim_${(fd.genel.sube||'Sube').replace(/ /g,'_')}_${fd.genel.tarih}.doc`;a.click();setTimeout(()=>URL.revokeObjectURL(u),5000);};
-  const newF=()=>{localStorage.removeItem(LKEY);setFd(mkFd());setStep(0);setDone(false);showS('🆕 Yeni form');};
-  const secs=[<S0 fd={fd} upd={upd} userSube={user.sube}/>,<S1 fd={fd} upd={upd} updP={updP}/>,<S2 fd={fd} setFd={setFd} save={save} step={step} updP={updP}/>,<S3 fd={fd} upd={upd} updP={updP}/>,<S4 fd={fd} upd={upd} updP={updP}/>,<S5 fd={fd} upd={upd} updP={updP}/>,<S6 fd={fd} upd={upd} updP={updP}/>,<S7 fd={fd} upd={upd} updP={updP}/>,<S8 fd={fd} onPDF={onPDF} onWord={onWord} onSubmit={onSub} submitting={sub} submitted={done}/>];
-  const prog=((step+1)/STEPS.length)*100;
-  return(<div style={{fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'}}>
-    <div style={{background:NAVY,color:'white',padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'}}>
-      <div><div style={{fontWeight:800,fontSize:14}}>🏪 BİZİM PAZAR</div><div style={{fontSize:11,opacity:.7,marginTop:1}}>{user.sube||user.name}</div></div>
-      <div style={{display:'flex',alignItems:'center',gap:8}}><div style={{fontSize:10,color:'#90CAF9',maxWidth:110,textAlign:'right'}}>{status}</div><button onClick={newF} style={{background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:7,padding:'5px 8px',fontSize:11,cursor:'pointer',fontWeight:600}}>🆕</button><button onClick={onLogout} style={{background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:7,padding:'5px 8px',fontSize:11,cursor:'pointer',fontWeight:600}}>Çıkış</button></div>
-    </div>
-    <div style={{background:'#E8EEF7',padding:'9px 16px 8px'}}>
-      <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style={{fontSize:13,color:NAVY,fontWeight:700}}>{STEPS[step]}</span><span style={{fontSize:12,color:'#666'}}>{step+1}/{STEPS.length}</span></div>
-      <div style={{height:4,background:'#C9D6EA',borderRadius:3}}><div style={{height:'100%',width:`${prog}%`,background:GOLD,borderRadius:3,transition:'width 0.3s'}}/></div>
-      <div style={{display:'flex',justifyContent:'space-between',marginTop:7}}>{STEPS.map((_,i)=>(<button key={i} onClick={()=>goTo(i)} title={STEPS[i]} style={{width:26,height:26,borderRadius:'50%',border:'none',cursor:'pointer',background:i<step?GOLD:i===step?NAVY:'#C9D6EA',color:'white',fontSize:10,fontWeight:700,padding:0,boxShadow:i===step?'0 2px 6px rgba(27,58,107,0.4)':'none',transition:'all 0.2s'}}>{i+1}</button>))}</div>
-    </div>
-    <div style={{padding:'16px 16px 120px'}}>{secs[step]}</div>
-    <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:700,background:'white',borderTop:'1px solid #e0e0e0',padding:'10px 16px',display:'flex',gap:10,boxShadow:'0 -2px 10px rgba(0,0,0,0.08)',zIndex:99}}>
-      {step>0&&<button onClick={()=>goTo(step-1)} style={{flex:1,padding:13,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:700,fontSize:14,cursor:'pointer'}}>← Geri</button>}
-      {step<STEPS.length-1&&<button onClick={()=>goTo(step+1)} style={{flex:2,padding:13,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'}}>İleri →</button>}
-    </div>
-  </div>);
-}
+  const wrap = div({fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'});
+  const hdr = div({background:NAVY,color:'white',padding:'14px 16px',display:'flex',alignItems:'center',gap:12,position:'sticky',top:0,zIndex:100});
+  hdr.appendChild(btn({background:'none',border:'none',color:'white',fontSize:24,cursor:'pointer',padding:0},()=>{state.view='admin';render();},'←'));
+  hdr.appendChild(div({},div({fontWeight:800,fontSize:15},d.sube),div({fontSize:11,opacity:.7},`${d.tarih} • ${d.denetci}`)));
+  wrap.appendChild(hdr);
 
-function App(){
-  const [user,setUser]=useState(null);
-  useEffect(()=>{try{const s=localStorage.getItem('bp-user');if(s)setUser(JSON.parse(s));}catch(e){}}, []);
-  const login=u=>{setUser(u);localStorage.setItem('bp-user',JSON.stringify(u));};
-  const logout=()=>{setUser(null);localStorage.removeItem('bp-user');};
-  if(!user) return <Login onLogin={login}/>;
-  if(user.role==='admin') return <AdminPanel user={user} onLogout={logout}/>;
-  return <FormApp user={user} onLogout={logout}/>;
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(r => console.log('SW registered'))
-      .catch(e => console.log('SW failed:', e));
+  const body = div({padding:'16px 16px 80px'});
+  body.appendChild(scoreBox(d.score));
+  const rc = card([]);
+  rows.forEach(([l,v],i)=>{
+    const row = div({display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'});
+    row.appendChild(div({fontSize:14,color:'#333'},l));
+    row.appendChild(div({fontSize:13,fontWeight:700,color:vc(v)},v||'—'));
+    rc.appendChild(row);
   });
+  body.appendChild(rc);
+
+  if(d.sktListe&&d.sktListe.length>0){
+    const sc=card([],{style:{background:'#FDECEA',border:`1px solid ${RED}`}});
+    sc.appendChild(div({fontWeight:700,color:RED,marginBottom:8},`🔴 SKT Sorunlu Ürünler (${d.sktListe.length} adet)`));
+    d.sktListe.forEach((it,i)=>{
+      const row=div({fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'});
+      row.innerHTML=`<b>${it.urun}</b>${it.gramaj?` <span style="color:#888">${it.gramaj}</span>`:''} — SKT: ${it.skt||'?'} — ${it.miktar||'?'} adet`;
+      sc.appendChild(row);
+    });
+    body.appendChild(sc);
+  }
+  if(d.kritikBulgu){const c=card([],{accent:RED,style:{background:'#FDECEA',border:`1px solid ${RED}`}});c.appendChild(div({fontWeight:700,color:RED,marginBottom:6},'🔴 Kritik Bulgular'));c.appendChild(div({fontSize:13,whiteSpace:'pre-wrap'},d.kritikBulgu));body.appendChild(c);}
+  if(d.yeniAksiyonlar){const c=card([],{accent:GREEN});c.appendChild(div({fontWeight:700,color:GREEN,marginBottom:6},'✅ Aksiyon Planı'));c.appendChild(div({fontSize:13,whiteSpace:'pre-wrap'},d.yeniAksiyonlar));body.appendChild(c);}
+  wrap.appendChild(body);
+  return wrap;
+}
+
+function doLogout(){state.user=null;state.view='login';state.loginSel=null;state.loginPin='';state.loginErr='';localStorage.removeItem('bp-user');render();}
+
+// ── Form Rendering ─────────────────────────────────────────────────
+function renderForm(){
+  const fd=state.fd, user=state.user;
+  if(!fd) return div({});
+  const prog=((state.step+1)/STEPS.length)*100;
+
+  const wrap = div({fontFamily:'system-ui,sans-serif',maxWidth:700,margin:'0 auto',background:'#F4F6FA',minHeight:'100vh'});
+
+  // Header
+  const hdr = div({background:NAVY,color:'white',padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 10px rgba(0,0,0,0.3)'});
+  hdr.appendChild(div({},div({fontWeight:800,fontSize:14},'🏪 BİZİM PAZAR'),div({fontSize:11,opacity:.7,marginTop:1},user.sube||user.name)));
+  const btnRow = div({display:'flex',alignItems:'center',gap:8});
+  if(state.status) btnRow.appendChild(div({fontSize:10,color:'#90CAF9',maxWidth:110,textAlign:'right'},state.status));
+  btnRow.appendChild(btn({background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:7,padding:'5px 8px',fontSize:11,cursor:'pointer',fontWeight:600},newForm,'🆕'));
+  btnRow.appendChild(btn({background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:7,padding:'5px 8px',fontSize:11,cursor:'pointer',fontWeight:600},doLogout,'Çıkış'));
+  hdr.appendChild(btnRow);
+  wrap.appendChild(hdr);
+
+  // Progress
+  const prog_wrap = div({background:'#E8EEF7',padding:'9px 16px 8px'});
+  const prog_top = div({display:'flex',justifyContent:'space-between',marginBottom:4});
+  prog_top.appendChild(div({fontSize:13,color:NAVY,fontWeight:700},STEPS[state.step]));
+  prog_top.appendChild(div({fontSize:12,color:'#666'},`${state.step+1}/${STEPS.length}`));
+  prog_wrap.appendChild(prog_top);
+  const pbar = div({height:4,background:'#C9D6EA',borderRadius:3});
+  const pfill = div({height:'100%',width:`${prog}%`,background:GOLD,borderRadius:3,transition:'width 0.3s'});
+  pbar.appendChild(pfill);prog_wrap.appendChild(pbar);
+  const dots = div({display:'flex',justifyContent:'space-between',marginTop:7});
+  STEPS.forEach((_,i)=>{
+    const dot = btn({width:26,height:26,borderRadius:'50%',border:'none',cursor:'pointer',background:i<state.step?GOLD:i===state.step?NAVY:'#C9D6EA',color:'white',fontSize:10,fontWeight:700,padding:0,transition:'all 0.2s'},
+      ()=>goTo(i), String(i+1));
+    dots.appendChild(dot);
+  });
+  prog_wrap.appendChild(dots);
+  wrap.appendChild(prog_wrap);
+
+  // Content
+  const content = div({padding:'16px 16px 120px'});
+  content.appendChild(renderStep(state.step));
+  wrap.appendChild(content);
+
+  // Nav
+  const nav = div({position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:700,background:'white',borderTop:'1px solid #e0e0e0',padding:'10px 16px',display:'flex',gap:10,boxShadow:'0 -2px 10px rgba(0,0,0,0.08)',zIndex:99});
+  if(state.step>0) nav.appendChild(btn({flex:1,padding:13,background:'#E8EEF7',color:NAVY,border:'none',borderRadius:10,fontWeight:700,fontSize:14,cursor:'pointer'},()=>goTo(state.step-1),'← Geri'));
+  if(state.step<STEPS.length-1) nav.appendChild(btn({flex:2,padding:13,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'},()=>goTo(state.step+1),'İleri →'));
+  wrap.appendChild(nav);
+  return wrap;
+}
+
+function goTo(ns){state.step=ns;saveFd();}
+
+function newForm(){
+  localStorage.removeItem(LKEY);
+  state.fd=mkFd(state.user);
+  state.step=0;state.submitted=false;
+  showStatus('🆕 Yeni form');
+}
+
+function updFd(sec,field,val){state.fd[sec][field]=val;saveFd();}
+function updP(sec,photos){state.fd[sec].photos=photos;saveFd();}
+
+function renderStep(step){
+  const fd=state.fd;
+  const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
+  const oi=[{v:'İyi',l:'✅ İyi',c:GREEN},{v:'Orta',l:'⚠️ Orta',c:GOLD},{v:'Kötü',l:'🔴 Kötü',c:RED}];
+  const wrap = div({className:'fi'});
+
+  if(step===0){
+    wrap.appendChild(secTitle('📋','Genel Bilgiler','Denetim başlangıç bilgilerini doldurun'));
+    const c=card([]);
+    c.appendChild(div({marginBottom:14},
+      div({fontSize:13,fontWeight:600,color:'#222',marginBottom:5},'Şube'),
+      state.user.sube
+        ? div({padding:'11px 12px',background:'#E8EEF7',borderRadius:9,fontSize:14,fontWeight:600,color:NAVY},state.user.sube)
+        : (()=>{
+            const sel=h('select',{style:{width:'100%',padding:'11px 12px',border:'1.5px solid #ddd',borderRadius:9,fontSize:14,background:'white',outline:'none'}});
+            h('option',{value:''},'Şube seçin...').selected=true; sel.appendChild(h('option',{value:''},'Şube seçin...'));
+            BRANCHES.forEach(b=>{const o=h('option',{value:b},b);if(fd.genel.sube===b)o.selected=true;sel.appendChild(o);});
+            sel.addEventListener('change',e=>updFd('genel','sube',e.target.value));
+            return sel;
+          })()
+    ));
+    c.appendChild(textInput('Denetim Tarihi',fd.genel.tarih,v=>updFd('genel','tarih',v),{type:'date'}));
+    const tr=div({display:'flex',gap:10});
+    tr.appendChild(textInput('Başlangıç',fd.genel.bas,v=>updFd('genel','bas',v),{type:'time',half:true}));
+    tr.appendChild(textInput('Bitiş',fd.genel.bitis,v=>updFd('genel','bitis',v),{type:'time',half:true}));
+    c.appendChild(tr);
+    c.appendChild(textInput('Denetçi',fd.genel.denetci,v=>updFd('genel','denetci',v)));
+    wrap.appendChild(c);
+  }
+  else if(step===1){
+    wrap.appendChild(secTitle('📦','Raf & Planogram','Raf düzeni ve planogram uyumu'));
+    const c=card([]);
+    c.appendChild(radio('Planogram Uyumu',o3,fd.raf.planogram,v=>updFd('raf','planogram',v),true));
+    c.appendChild(radio('Marka Blok Uygulaması',o3,fd.raf.marka,v=>updFd('raf','marka',v),true));
+    c.appendChild(radio('Raf Doluluk',[{v:'Tam',l:'✅ %90+',c:GREEN},{v:'Kısmi',l:'⚠️ %70-89',c:GOLD},{v:'Yok',l:'🔴 <%70',c:RED}],fd.raf.doluluk,v=>updFd('raf','doluluk',v)));
+    c.appendChild(radio('FIFO / Ürün Rotasyonu',o3,fd.raf.fifo,v=>updFd('raf','fifo',v),true));
+    c.appendChild(textarea('Notlar',fd.raf.notlar,v=>updFd('raf','notlar',v),{placeholder:'Raf ile ilgili tespitler...'}));
+    c.appendChild(photoPicker(fd.raf.photos||[],p=>updP('raf',p)));
+    wrap.appendChild(c);
+  }
+  else if(step===2){ wrap.appendChild(renderSKT()); }
+  else if(step===3){
+    wrap.appendChild(secTitle('🏷️','Fiyat & Etiket','Fiyat doğruluğu ve kampanya etiket kontrolü'));
+    const c=card([]);
+    c.appendChild(radio('Fiyat Etiketi Doğruluğu',o3,fd.etiket.dogruluk,v=>updFd('etiket','dogruluk',v),true));
+    c.appendChild(radio('Kampanya Etiketi',[{v:'Tam',l:'✅ Doğru',c:GREEN},{v:'Kısmi',l:'⚠️ Eksik',c:GOLD},{v:'Sorunlu',l:'🔴 Yanlış',c:RED}],fd.etiket.kampanya,v=>updFd('etiket','kampanya',v),true));
+    const tr=div({display:'flex',gap:10});
+    tr.appendChild(textInput('Eksik Etiket (adet)',fd.etiket.eksik,v=>updFd('etiket','eksik',v),{type:'number',placeholder:'0',half:true}));
+    tr.appendChild(textInput('Yanlış Fiyat (adet)',fd.etiket.yanlis,v=>updFd('etiket','yanlis',v),{type:'number',placeholder:'0',half:true}));
+    c.appendChild(tr);
+    c.appendChild(textarea('Notlar',fd.etiket.notlar,v=>updFd('etiket','notlar',v),{placeholder:'Etiket sorunlarını detaylandırın...'}));
+    c.appendChild(photoPicker(fd.etiket.photos||[],p=>updP('etiket',p)));
+    wrap.appendChild(c);
+  }
+  else if(step===4){
+    wrap.appendChild(secTitle('🏭','Depo Düzeni','Depo organizasyonu ve transfer disiplini'));
+    const c=card([]);
+    c.appendChild(radio('Depo Genel Düzeni',oi,fd.depo.genel,v=>updFd('depo','genel',v),true));
+    c.appendChild(radio('FIFO Depo Uyumu',o3,fd.depo.fifo,v=>updFd('depo','fifo',v),true));
+    c.appendChild(radio('Raf-Depo Transfer Disiplini',o3,fd.depo.transfer,v=>updFd('depo','transfer',v),true));
+    c.appendChild(radio('İade Köşesi Düzeni',oi,fd.depo.iade,v=>updFd('depo','iade',v)));
+    c.appendChild(radio('Soğuk Zincir / Sütlük Dolabı',oi,fd.depo.soguk,v=>updFd('depo','soguk',v)));
+    c.appendChild(textarea('Notlar',fd.depo.notlar,v=>updFd('depo','notlar',v),{placeholder:'Depo ile ilgili tespitler...'}));
+    c.appendChild(photoPicker(fd.depo.photos||[],p=>updP('depo',p)));
+    wrap.appendChild(c);
+  }
+  else if(step===5){
+    wrap.appendChild(secTitle('👥','Personel & Hijyen','Personel görünümü ve görev bilinci'));
+    const c=card([]);
+    c.appendChild(radio('Üniforma Uyumu',o3,fd.personel.unifroma,v=>updFd('personel','unifroma',v),true));
+    c.appendChild(radio('Kişisel Hijyen',o3,fd.personel.hijyen,v=>updFd('personel','hijyen',v),true));
+    c.appendChild(radio('Görev Bilinci',[{v:'Tam',l:'✅ Yüksek',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Düşük',c:RED}],fd.personel.gorev,v=>updFd('personel','gorev',v),true));
+    c.appendChild(radio('Müşteri İlişkileri',[{v:'Tam',l:'✅ İyi',c:GREEN},{v:'Kısmi',l:'⚠️ Orta',c:GOLD},{v:'Yok',l:'🔴 Kötü',c:RED}],fd.personel.musteri,v=>updFd('personel','musteri',v)));
+    c.appendChild(textarea('Notlar',fd.personel.notlar,v=>updFd('personel','notlar',v),{placeholder:'Personel ile ilgili tespitler...'}));
+    c.appendChild(photoPicker(fd.personel.photos||[],p=>updP('personel',p)));
+    wrap.appendChild(c);
+  }
+  else if(step===6){
+    wrap.appendChild(secTitle('🔄','İade Yönetimi','Depoda bekleyen iade ürün durumu'));
+    const c=card([]);
+    c.appendChild(radio('Bekleyen İade Ürün Var Mı?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}],fd.iade.var,v=>updFd('iade','var',v),true));
+    if(fd.iade.var==='Evet'){
+      const tr=div({display:'flex',gap:10});
+      tr.appendChild(textInput('Ürün Adedi',fd.iade.adet,v=>updFd('iade','adet',v),{type:'number',placeholder:'0',half:true}));
+      tr.appendChild(textInput('En Uzun Bekleme (gün)',fd.iade.sure,v=>updFd('iade','sure',v),{type:'number',placeholder:'0',half:true}));
+      c.appendChild(tr);
+      c.appendChild(textarea('Firmalar / Markalar',fd.iade.firma,v=>updFd('iade','firma',v),{placeholder:'Hangi firmaların ürünleri bekliyor?',rows:2}));
+    }
+    c.appendChild(textarea('Notlar',fd.iade.notlar,v=>updFd('iade','notlar',v),{placeholder:'İade ile ilgili notlar...'}));
+    c.appendChild(photoPicker(fd.iade.photos||[],p=>updP('iade',p)));
+    wrap.appendChild(c);
+  }
+  else if(step===7){
+    const score=calcScore(fd);
+    wrap.appendChild(secTitle('⭐','Genel Değerlendirme','Denetim sonuç özeti ve aksiyonlar'));
+    wrap.appendChild(scoreBox(score));
+    const c1=card([],{accent:RED});
+    c1.appendChild(textarea('🔴 Kritik Bulgular',fd.degerl.kritik,v=>updFd('degerl','kritik',v),{placeholder:'Acil müdahale gerektiren tespitler...'}));
+    wrap.appendChild(c1);
+    const c2=card([]);
+    c2.appendChild(textarea('📋 Önceki Aksiyon Durumları',fd.degerl.onceki,v=>updFd('degerl','onceki',v),{placeholder:'Önceki aksiyonlar tamamlandı mı?'}));
+    c2.appendChild(textarea('✅ Yeni Aksiyonlar',fd.degerl.yeni,v=>updFd('degerl','yeni',v),{placeholder:'Alınması gereken aksiyonlar ve sorumluları...'}));
+    c2.appendChild(textarea('📝 Genel Notlar',fd.degerl.genel,v=>updFd('degerl','genel',v),{placeholder:'Genel değerlendirme...'}));
+    c2.appendChild(photoPicker(fd.degerl.photos||[],p=>updP('degerl',p)));
+    wrap.appendChild(c2);
+  }
+  else if(step===8){ wrap.appendChild(renderRapor()); }
+
+  return wrap;
+}
+
+function renderSKT(){
+  const fd=state.fd;
+  const o3=[{v:'Tam',l:'✅ Tam',c:GREEN},{v:'Kısmi',l:'⚠️ Kısmi',c:GOLD},{v:'Yok',l:'🔴 Yok',c:RED}];
+  const wrap=div({});
+  wrap.appendChild(secTitle('⏰','SKT Kontrolü','Son kullanma tarihi ve FIFO denetimi'));
+  const c=card([]);
+  c.appendChild(radio('SKT Geçmiş Ürün Var Mı?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'🔴 Evet',c:RED}],fd.skt.sktVar,v=>updFd('skt','sktVar',v),true));
+  c.appendChild(radio('Yakın SKT (7 gün içinde)?',[{v:'Hayır',l:'✅ Hayır',c:GREEN},{v:'Evet',l:'⚠️ Evet',c:GOLD}],fd.skt.yakinVar,v=>updFd('skt','yakinVar',v)));
+  c.appendChild(radio('FIFO Uygulaması',o3,fd.skt.fifo,v=>updFd('skt','fifo',v),true));
+  wrap.appendChild(c);
+
+  // SKT list
+  const lb=div({background:'#FDECEA',border:`1px solid ${RED}`,borderRadius:12,padding:16,marginBottom:14});
+  lb.appendChild(div({fontWeight:700,color:RED,fontSize:15,marginBottom:12},'🔴 SKT / Sorunlu Ürün Listesi'));
+
+  // Input form
+  const form=div({background:'white',borderRadius:9,padding:12,marginBottom:10});
+  const brow=div({display:'flex',gap:8,marginBottom:8,alignItems:'flex-end'});
+  const binp=h('input',{placeholder:'Barkod no',style:{flex:1,padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}});
+  binp.value=state.sktItem.barkod;
+  binp.addEventListener('input',e=>{state.sktItem.barkod=e.target.value;});
+  brow.appendChild(binp);
+  brow.appendChild(btn({padding:'9px 14px',background:NAVY,color:'white',border:'none',borderRadius:7,fontSize:13,cursor:'pointer',fontWeight:700,flexShrink:0},openScanner,'📷 Tara'));
+  form.appendChild(brow);
+
+  const unameWrap=div({gridColumn:'1/-1',marginBottom:8});
+  unameWrap.appendChild(div({fontSize:12,color:'#666',marginBottom:4},'Ürün Adı *'));
+  const uninp=h('input',{placeholder:'Ürün adı',style:{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}});
+  uninp.value=state.sktItem.urun;
+  uninp.addEventListener('input',e=>{state.sktItem.urun=e.target.value;});
+  unameWrap.appendChild(uninp);
+  form.appendChild(unameWrap);
+
+  const grid=div({display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8});
+  [['Gramaj','gramaj','500g','text'],['SKT Tarihi','skt','','date'],['Miktar','miktar','Adet','text'],['Alan / Raf No','alan','Raf 3A...','text']].forEach(([lbl,key,ph,type])=>{
+    const w=div({});
+    w.appendChild(div({fontSize:12,color:'#666',marginBottom:4},lbl));
+    const inp=h('input',{type,placeholder:ph,style:{width:'100%',padding:'9px',border:'1px solid #ddd',borderRadius:7,fontSize:13,outline:'none'}});
+    inp.value=state.sktItem[key]||'';
+    inp.addEventListener('input',e=>{state.sktItem[key]=e.target.value;});
+    w.appendChild(inp);grid.appendChild(w);
+  });
+  form.appendChild(grid);
+  form.appendChild(btn({width:'100%',padding:11,background:RED,color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:14,cursor:'pointer'},addSktItem,'+ Ürün Ekle'));
+  lb.appendChild(form);
+
+  if((fd.skt.liste||[]).length===0){
+    lb.appendChild(div({color:'#999',fontSize:13,textAlign:'center',padding:'8px 0'},'Henüz ürün eklenmedi'));
+  } else {
+    (fd.skt.liste||[]).forEach(it=>{
+      const row=div({background:'white',borderRadius:8,padding:'10px 12px',marginBottom:7,display:'flex',justifyContent:'space-between',alignItems:'flex-start'});
+      const left=div({flex:1,minWidth:0});
+      const title=div({fontWeight:700,fontSize:14});
+      title.innerHTML=`${it.urun}${it.gramaj?` <span style="font-weight:400;color:#888;font-size:12px">${it.gramaj}</span>`:''}`;
+      left.appendChild(title);
+      left.appendChild(div({fontSize:12,color:'#666',marginTop:2},`${it.barkod?it.barkod+' • ':''}SKT: ${it.skt||'?'} • ${it.miktar||'?'} adet${it.alan?' • '+it.alan:''}`));
+      row.appendChild(left);
+      row.appendChild(btn({background:'none',border:'none',color:RED,fontSize:22,cursor:'pointer',padding:'0 4px',lineHeight:1},()=>delSktItem(it.id),'×'));
+      lb.appendChild(row);
+    });
+  }
+  wrap.appendChild(lb);
+  const c2=card([]);
+  c2.appendChild(textarea('Ek Notlar',fd.skt.notlar,v=>updFd('skt','notlar',v),{placeholder:'SKT ile ilgili ek tespitler...'}));
+  c2.appendChild(photoPicker(fd.skt.photos||[],p=>updP('skt',p)));
+  wrap.appendChild(c2);
+  return wrap;
+}
+
+function addSktItem(){
+  if(!state.sktItem.urun.trim()) return;
+  state.fd.skt.liste=[...(state.fd.skt.liste||[]),{...state.sktItem,id:Date.now()}];
+  state.sktItem={barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''};
+  saveFd();
+}
+function delSktItem(id){state.fd.skt.liste=state.fd.skt.liste.filter(x=>x.id!==id);saveFd();}
+
+function openScanner(){state.scannerOpen=true;render();setTimeout(()=>{document.getElementById('scanner-file')?.click();},100);}
+
+function renderScanner(){
+  const wrap=div({position:'fixed',inset:0,background:'rgba(0,0,0,0.95)',zIndex:2000,display:'flex',flexDirection:'column'});
+  const hdr=div({background:NAVY,padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0});
+  hdr.appendChild(div({color:'white',fontWeight:700,fontSize:16},'📷 Barkod Tara'));
+  hdr.appendChild(btn({background:'none',border:'none',color:'white',fontSize:28,cursor:'pointer',lineHeight:1},closeScanner,'×'));
+  wrap.appendChild(hdr);
+  const body=div({flex:1,display:'flex',flexDirection:'column',padding:20,gap:14,overflowY:'auto'});
+  body.appendChild(div({background:'rgba(255,255,255,0.08)',borderRadius:12,padding:16,color:'#ccc',fontSize:13,lineHeight:1.8},
+    div({color:'white',fontWeight:700,fontSize:14,marginBottom:4},'Nasıl Taranır?'),
+    '1. Fotoğraf Çek butonuna basın\n2. Barkodu kameraya getirin\n3. Uygulama otomatik okur'
+  ));
+  body.appendChild(btn({padding:18,background:GOLD,color:'white',border:'none',borderRadius:14,fontWeight:700,fontSize:18,cursor:'pointer'},()=>document.getElementById('scanner-file')?.click(),'📷 Fotoğraf Çek'));
+  const inp=h('input',{id:'scanner-file',type:'file',accept:'image/*',capture:'environment',style:{display:'none'}});
+  inp.addEventListener('change',handleScan);
+  body.appendChild(inp);
+  body.appendChild(div({display:'flex',alignItems:'center',gap:10,color:'#666',fontSize:12},
+    div({flex:1,height:1,background:'rgba(255,255,255,0.15)'}),
+    'veya',
+    div({flex:1,height:1,background:'rgba(255,255,255,0.15)'})
+  ));
+  const manRow=div({display:'flex',gap:8});
+  const minp=h('input',{id:'manual-bc',type:'number',placeholder:'8690000000000',style:{flex:1,padding:'12px',border:'none',borderRadius:9,fontSize:15,outline:'none',background:'white'}});
+  minp.addEventListener('keydown',e=>{if(e.key==='Enter') doManualLookup();});
+  manRow.appendChild(minp);
+  manRow.appendChild(btn({padding:'12px 18px',background:GOLD,color:'white',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer'},doManualLookup,'Ara'));
+  body.appendChild(manRow);
+  wrap.appendChild(body);
+  return wrap;
+}
+
+function closeScanner(){state.scannerOpen=false;render();}
+
+async function handleScan(e){
+  const f=e.target.files[0]; if(!f) return;
+  showScanStatus('🔍 Barkod okunuyor...');
+  try{
+    if(!('BarcodeDetector' in window)){showScanStatus('❌ Desteklenmiyor — manuel girin');return;}
+    const bm=await createImageBitmap(f);
+    const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf']});
+    const res=await det.detect(bm);
+    if(res.length>0) await doLookup(res[0].rawValue);
+    else showScanStatus('⚠️ Okunamadı — tekrar deneyin');
+  }catch(e){showScanStatus('⚠️ Hata — manuel girin');}
+  e.target.value='';
+}
+
+function showScanStatus(msg){
+  const el=document.getElementById('scan-status');
+  if(el) el.textContent=msg;
+  else alert(msg);
+}
+
+async function doManualLookup(){
+  const bc=document.getElementById('manual-bc')?.value?.trim();
+  if(!bc) return;
+  await doLookup(bc);
+}
+
+async function doLookup(bc){
+  showScanStatus('🌐 Ürün aranıyor...');
+  let name='',qty='';
+  try{
+    const res=await fetch(`https://world.openfoodfacts.org/api/v0/product/${bc}.json`);
+    const data=await res.json();
+    if(data.status===1){
+      name=(data.product.product_name_tr||data.product.product_name||'').trim().split(',')[0].trim();
+      qty=data.product.quantity||'';
+    }
+  }catch(e){}
+  state.sktItem.barkod=bc;
+  state.sktItem.urun=name;
+  state.sktItem.gramaj=qty;
+  state.scannerOpen=false;
+  render();
+}
+
+function renderRapor(){
+  const fd=state.fd;
+  const score=calcScore(fd);
+  const sc2=sco(score);
+  const g=fd.genel;
+  const tp=[fd.raf,fd.skt,fd.etiket,fd.depo,fd.personel,fd.iade,fd.degerl].reduce((n,s)=>n+(s.photos||[]).length,0);
+  const rows=[['Raf & Planogram',fd.raf.planogram],['SKT Durumu',fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—'],['Fiyat & Etiket',fd.etiket.dogruluk],['Depo Düzeni',fd.depo.genel],['Personel',fd.personel.unifroma],['İade Durumu',fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—']];
+  const vc=v=>!v||v==='—'?'#aaa':v.includes('✅')||['Tam','İyi'].includes(v)?GREEN:v.includes('⚠️')||['Kısmi','Orta'].includes(v)?GOLD:RED;
+  const wrap=div({});
+  wrap.appendChild(secTitle('📄','Rapor & Gönder','Özeti görüntüle, sisteme kaydet ve indir'));
+
+  const hbox=div({background:`${NAVY}12`,border:`1px solid ${NAVY}30`,borderRadius:12,padding:16,marginBottom:14});
+  const hrow=div({display:'flex',justifyContent:'space-between',alignItems:'center'});
+  const hleft=div({});
+  hleft.appendChild(div({fontWeight:700,color:NAVY,fontSize:15},g.sube||'Şube belirtilmedi'));
+  hleft.appendChild(div({fontSize:12,color:'#555',marginTop:2},`${g.tarih} • ${g.bas||'--:--'} – ${g.bitis||'--:--'}`));
+  hleft.appendChild(div({fontSize:12,color:'#555'},g.denetci));
+  if(tp>0) hleft.appendChild(div({fontSize:12,color:GOLD,marginTop:2},`📸 ${tp} fotoğraf`));
+  hrow.appendChild(hleft);
+  const badge=div({textAlign:'center',background:sc2,color:'white',borderRadius:12,padding:'10px 16px',minWidth:72});
+  badge.appendChild(div({fontSize:32,fontWeight:800,lineHeight:1},String(score)));
+  badge.appendChild(div({fontSize:11},'/100'));
+  hrow.appendChild(badge);
+  hbox.appendChild(hrow);
+  hbox.appendChild(div({marginTop:10,fontSize:13,fontWeight:700,color:sc2},slbl(score)));
+  wrap.appendChild(hbox);
+
+  const rc=card([]);
+  rows.forEach(([l,v],i)=>{
+    const row=div({display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<rows.length-1?'1px solid #eee':'none'});
+    row.appendChild(div({fontSize:14,color:'#333'},l));
+    row.appendChild(div({fontSize:13,fontWeight:700,color:vc(v)},v||'—'));
+    rc.appendChild(row);
+  });
+  wrap.appendChild(rc);
+
+  if((fd.skt.liste||[]).length>0){
+    const sc=card([],{style:{background:'#FDECEA',border:`1px solid ${RED}`}});
+    sc.appendChild(div({fontWeight:700,color:RED,marginBottom:8},`🔴 SKT Sorunlu Ürünler (${fd.skt.liste.length} adet)`));
+    fd.skt.liste.forEach((it,i)=>{
+      const r=div({fontSize:13,padding:'5px 0',borderBottom:'1px solid #FAD5D2'});
+      r.innerHTML=`<b>${it.urun}</b>${it.gramaj?` <span style="color:#888">${it.gramaj}</span>`:''} — SKT: ${it.skt||'?'} — ${it.miktar||'?'} adet`;
+      sc.appendChild(r);
+    });
+    wrap.appendChild(sc);
+  }
+
+  const btns=div({display:'flex',flexDirection:'column',gap:12,marginTop:24});
+  if(!state.submitted){
+    btns.appendChild(btn({padding:16,background:state.submitting?'#aaa':GREEN,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:16,cursor:state.submitting?'default':'pointer'},
+      state.submitting?null:doSubmit, state.submitting?'⏳ Gönderiliyor...':'☁️ Sisteme Kaydet & Gönder'));
+  } else {
+    btns.appendChild(div({padding:16,background:'#E8F5E9',border:`1px solid ${GREEN}`,borderRadius:12,textAlign:'center',color:GREEN,fontWeight:700,fontSize:15},'✅ Denetim sisteme kaydedildi!'));
+  }
+  btns.appendChild(btn({padding:14,background:RED,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer'},doPDF,'📄 PDF İndir'));
+  btns.appendChild(btn({padding:14,background:NAVY,color:'white',border:'none',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer'},doWord,'📝 Word İndir'));
+  wrap.appendChild(btns);
+  return wrap;
+}
+
+async function doSubmit(){
+  if(state.submitting) return;
+  state.submitting=true;render();
+  const fd=state.fd, score=calcScore(fd);
+  const pl={sube:fd.genel.sube||state.user.sube||'',tarih:fd.genel.tarih,denetci:fd.genel.denetci,score,
+    rafPlanogram:fd.raf.planogram,sktDurum:fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—',
+    etiketDurum:fd.etiket.dogruluk,depoDurum:fd.depo.genel,personelDurum:fd.personel.unifroma,
+    iadeDurum:fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—',
+    sktListe:fd.skt.liste||[],kritikBulgu:fd.degerl.kritik||'',yeniAksiyonlar:fd.degerl.yeni||'',notlar:fd.degerl.genel||'',userId:state.user.id};
+  const id=await fbSave(pl);
+  state.submitting=false;
+  if(id){state.submitted=true;showStatus('✅ Sisteme kaydedildi!',4000);}
+  else showStatus('⚠️ Bağlantı hatası',3000);
+}
+
+function doPDF(){
+  const html=buildRpt(state.fd,calcScore(state.fd));
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank');
+  if(w) w.addEventListener('load',()=>setTimeout(()=>w.print(),500));
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function doWord(){
+  const html=buildRpt(state.fd,calcScore(state.fd));
+  const blob=new Blob(['\ufeff'+html],{type:'application/msword;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`Denetim_${(state.fd.genel.sube||'Sube').replace(/ /g,'_')}_${state.fd.genel.tarih}.doc`;
+  a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+// ── Main Render ────────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('app');
+  if(!app) return;
+  app.innerHTML='';
+
+  let view;
+  if(state.view==='login') view=renderLogin();
+  else if(state.view==='admin') view=renderAdmin();
+  else if(state.view==='detail') view=renderDetail();
+  else view=renderForm();
+
+  app.appendChild(view);
+  if(state.scannerOpen) app.appendChild(renderScanner());
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+function init(){
+  // Check saved session
+  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);state.user=u;if(u.role==='admin'){state.view='admin';loadDenetimler();}else{state.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');state.fd=p.fd||mkFd(u);state.step=p.step||0;}catch(e){state.fd=mkFd(u);}}}}catch(e){}
+
+  render();
+
+  // Hide splash
+  setTimeout(()=>{
+    const sp=document.getElementById('splash');
+    if(sp){sp.classList.add('hide');setTimeout(()=>sp.remove(),400);}
+  },300);
+}
+
+// Start when Firebase is ready (or timeout)
+if(window._fbOk!==undefined) init();
+else window.addEventListener('fb-ready', init);
+setTimeout(()=>{if(!document.getElementById('app')?.children.length) init();}, 3000);
+
+// SW
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 </script>
 </body>
