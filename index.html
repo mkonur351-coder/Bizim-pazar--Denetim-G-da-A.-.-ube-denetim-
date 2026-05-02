@@ -18,6 +18,10 @@ input,textarea,select,button{font-family:inherit}
 #splash.hide{opacity:0;pointer-events:none}
 .fi{animation:fi 0.2s ease}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+button{transition:all 0.15s;outline:none;}
+button:active{opacity:0.85;transform:scale(0.98);}
+select{-webkit-appearance:none;appearance:none;}
+input[type=date],input[type=time]{-webkit-appearance:none;}
 </style>
 </head>
 <body>
@@ -188,7 +192,7 @@ function btn(style, onClick, ...children) { return h('button', {style, onClick},
 
 // ── UI Components ──────────────────────────────────────────────────
 function card(children, extra={}) {
-  return div({background:'#fff',border:'1px solid #E0E0E0',borderLeft:extra.accent?`4px solid ${extra.accent}`:undefined,borderRadius:12,padding:16,marginBottom:14,...(extra.style||{})}, ...children);
+  return div({background:'#fff',border:'1px solid #E0E0E0',borderLeft:extra.accent?`4px solid ${extra.accent}`:undefined,borderRadius:12,padding:16,marginBottom:14,boxShadow:'0 1px 4px rgba(0,0,0,0.06)',...(extra.style||{})}, ...children);
 }
 
 function radio(label, opts, value, onChange, req=false) {
@@ -298,13 +302,13 @@ function renderSections(fd,row,sktR,pg){
 // ── Views ──────────────────────────────────────────────────────────
 
 function renderLogin() {
-  const wrap = div({minHeight:'100vh',background:NAVY,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20});
-  const hero = div({marginBottom:24,textAlign:'center'},
+  const wrap = div({minHeight:'100vh',background:NAVY,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 20px',overflowY:'auto'});
+  const hero = div({marginBottom:24,textAlign:'center',flexShrink:0},
     div({fontSize:52,marginBottom:8},'🏪'),
     div({color:'white',fontSize:22,fontWeight:800},'BİZİM PAZAR'),
     div({color:'rgba(255,255,255,0.6)',fontSize:13,marginTop:4},'Saha Denetim Sistemi')
   );
-  const box = div({background:'white',borderRadius:20,padding:24,width:'100%',maxWidth:380});
+  const box = div({background:'white',borderRadius:20,padding:24,width:'100%',maxWidth:380,boxShadow:'0 4px 24px rgba(0,0,0,0.15)'});
   box.appendChild(div({fontSize:15,fontWeight:700,color:NAVY,marginBottom:16},'Giriş Yap'));
   box.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:8},'Kullanıcı'));
   const userList = div({display:'flex',flexDirection:'column',gap:7,marginBottom:16});
@@ -334,9 +338,11 @@ function renderLogin() {
   }
   if(state.loginErr) box.appendChild(div({color:RED,fontSize:13,marginBottom:12,textAlign:'center'}, state.loginErr));
   box.appendChild(btn({width:'100%',padding:14,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'}, doLogin, 'Giriş Yap →'));
-  wrap.appendChild(hero);
-  wrap.appendChild(box);
-  wrap.appendChild(div({color:'rgba(255,255,255,0.3)',fontSize:11,marginTop:20},'Bizim Pazar Gıda A.Ş.'));
+  const inner = div({width:'100%',maxWidth:420,display:'flex',flexDirection:'column',alignItems:'center',gap:0,paddingBottom:20});
+  inner.appendChild(hero);
+  inner.appendChild(box);
+  inner.appendChild(div({color:'rgba(255,255,255,0.3)',fontSize:11,marginTop:16,textAlign:'center'},'Bizim Pazar Gıda A.Ş.'));
+  wrap.appendChild(inner);
   return wrap;
 }
 
