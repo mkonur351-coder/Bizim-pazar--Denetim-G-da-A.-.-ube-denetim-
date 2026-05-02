@@ -307,14 +307,23 @@ function saveFd(){
 let _saveTimer=null;
 function upd(sec,f,v){
   S.fd[sec][f]=v;
-  // Debounce save - don't save on every keystroke
+  // Debounce save for text inputs - no render needed
   if(_saveTimer) clearTimeout(_saveTimer);
   _saveTimer=setTimeout(()=>{
     try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
     showStatus('☁️ Kaydedildi');
   },800);
 }
-function updP(sec,p){S.fd[sec].photos=p;saveFd();}
+function updImmediate(sec,f,v){
+  // For non-text controls that need instant save
+  S.fd[sec][f]=v;
+  try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
+}
+function updP(sec,p){
+  S.fd[sec].photos=p;
+  try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
+  render(); // Photos need immediate visual update
+}
 function goTo(ns){
   S.step=ns;
   try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
@@ -363,7 +372,10 @@ function radioGroup(label,opts,val,onChange,req=false){
       else if(o.c===RED)b.classList.add('sel-red');
       else b.classList.add('sel-navy');
     }
-    on(b,'click',()=>onChange(o.v));
+    on(b,'click',()=>{
+      onChange(o.v);
+      render(); // Immediate visual update for radio
+    });
     row.appendChild(b);
   });
   w.appendChild(l);w.appendChild(row);
@@ -467,9 +479,9 @@ async function doLookup(bc){
   // Silent lookup - user sees nothing until result arrives
   S.sktItem.barkod=bc;
   S.scanOpen=false;
-  render(); // close scanner first, show current barkod
+  render(); // close scanner, show barkod immediately
   
-  // Fetch in background
+  // Fetch product info in background
   let name='',qty='';
   try{
     const res=await fetch(`https://world.openfoodfacts.org/api/v0/product/${bc}.json`);
@@ -576,7 +588,8 @@ function stepSKT(){
     if(!S.sktItem.urun.trim())return;
     S.fd.skt.liste=[...(S.fd.skt.liste||[]),{...S.sktItem,id:Date.now()}];
     S.sktItem={barkod:'',urun:'',gramaj:'',skt:'',miktar:'',alan:''};
-    saveFd();
+    try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
+    render(); // Immediate update to show new item
   });
   form.appendChild(addBtn);
   box.appendChild(form);
@@ -591,7 +604,7 @@ function stepSKT(){
     if(it.gramaj){const g=el('span','skt-item-gram',it.gramaj);name.appendChild(g);}
     left.appendChild(name);
     left.appendChild(el('div','skt-item-info',`${it.barkod?it.barkod+' • ':''}SKT: ${it.skt||'?'} • ${it.miktar||'?'} adet${it.alan?' • '+it.alan:''}`));
-    const del=el('button','skt-del','×');on(del,'click',()=>{S.fd.skt.liste=S.fd.skt.liste.filter(x=>x.id!==it.id);saveFd();});
+    const del=el('button','skt-del','×');on(del,'click',()=>{S.fd.skt.liste=S.fd.skt.liste.filter(x=>x.id!==it.id);try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}render();});
     row.appendChild(left);row.appendChild(del);box.appendChild(row);
   });
   w.appendChild(box);
