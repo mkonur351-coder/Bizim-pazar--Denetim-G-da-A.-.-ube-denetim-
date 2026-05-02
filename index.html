@@ -22,6 +22,22 @@ button{transition:all 0.15s;outline:none;}
 button:active{opacity:0.85;transform:scale(0.98);}
 select{-webkit-appearance:none;appearance:none;}
 input[type=date],input[type=time]{-webkit-appearance:none;}
+.login-wrap{min-height:100vh;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.login-box{background:white;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.25);}
+.login-title{font-size:15px;font-weight:700;color:#1B3A6B;margin-bottom:16px;}
+.login-label{font-size:13px;font-weight:600;color:#444;margin-bottom:8px;}
+.user-btn{padding:12px 14px;border-radius:10px;border:2px solid #e0e0e0;background:white;color:#555;font-size:14px;cursor:pointer;font-weight:400;text-align:left;width:100%;margin-bottom:7px;display:block;}
+.user-btn.active-admin{border-color:#E8A020;background:#FFF8E7;color:#E8A020;font-weight:700;}
+.user-btn.active-user{border-color:#1B3A6B;background:#EEF2F9;color:#1B3A6B;font-weight:700;}
+.pin-input{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:9px;font-size:18px;outline:none;letter-spacing:6px;text-align:center;display:block;}
+.login-btn{width:100%;padding:14px;background:#1B3A6B;color:white;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;}
+.login-footer{color:rgba(255,255,255,0.3);font-size:11px;margin-top:16px;text-align:center;}
+.card{background:white;border:1px solid #E0E0E0;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.card-accent-red{border-left:4px solid #C0212B;}
+.sec-title h2{color:#1B3A6B;font-size:19px;font-weight:800;margin:0 0 20px;}
+.form-label{font-size:13px;font-weight:600;color:#222;margin-bottom:5px;}
+.form-input{width:100%;padding:11px 12px;border:1.5px solid #ddd;border-radius:9px;font-size:14px;outline:none;background:white;}
+.form-textarea{width:100%;padding:11px 12px;border:1.5px solid #ddd;border-radius:9px;font-size:13px;outline:none;resize:vertical;background:white;}
 </style>
 </head>
 <body>
@@ -302,24 +318,19 @@ function renderSections(fd,row,sktR,pg){
 // ── Views ──────────────────────────────────────────────────────────
 
 function renderLogin() {
-  const wrap = div({minHeight:'100vh',background:NAVY,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 20px',overflowY:'auto'});
-  const hero = div({marginBottom:24,textAlign:'center',flexShrink:0},
+  const wrap = h('div',{className:'login-wrap'});
+  const hero = div({marginBottom:24,textAlign:'center'},
     div({fontSize:52,marginBottom:8},'🏪'),
     div({color:'white',fontSize:22,fontWeight:800},'BİZİM PAZAR'),
     div({color:'rgba(255,255,255,0.6)',fontSize:13,marginTop:4},'Saha Denetim Sistemi')
   );
-  const box = div({background:'white',borderRadius:20,padding:24,width:'100%',maxWidth:380,boxShadow:'0 4px 24px rgba(0,0,0,0.15)'});
-  box.appendChild(div({fontSize:15,fontWeight:700,color:NAVY,marginBottom:16},'Giriş Yap'));
-  box.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:8},'Kullanıcı'));
-  const userList = div({display:'flex',flexDirection:'column',gap:7,marginBottom:16});
+  const box = h('div',{className:'login-box'});
+  box.appendChild(h('div',{className:'login-title'},'Giriş Yap'));
+  box.appendChild(h('div',{className:'login-label'},'Kullanıcı'));
+  const userList = div({marginBottom:16});
   USERS.forEach(u=>{
-    const b = btn({
-      padding:'11px 14px',borderRadius:10,
-      border:`2px solid ${state.loginSel===u.id?u.role==='admin'?GOLD:NAVY:'#e0e0e0'}`,
-      background:state.loginSel===u.id?u.role==='admin'?`${GOLD}18`:`${NAVY}10`:'white',
-      color:state.loginSel===u.id?u.role==='admin'?GOLD:NAVY:'#555',
-      fontSize:14,cursor:'pointer',fontWeight:state.loginSel===u.id?700:400,textAlign:'left',width:'100%'
-    }, ()=>{state.loginSel=u.id;state.loginPin='';state.loginErr='';render();}, u.label);
+    const cls = state.loginSel===u.id ? (u.role==='admin'?'user-btn active-admin':'user-btn active-user') : 'user-btn';
+    const b = h('button',{className:cls, onClick:()=>{state.loginSel=u.id;state.loginPin='';state.loginErr='';render();}}, u.label);
     userList.appendChild(b);
   });
   box.appendChild(userList);
@@ -328,7 +339,8 @@ function renderLogin() {
     pinWrap.appendChild(div({fontSize:13,fontWeight:600,color:'#444',marginBottom:8},'PIN'));
     const pinInp = h('input',{
       type:'password',placeholder:'••••',
-      style:{width:'100%',padding:'12px',border:`1.5px solid ${state.loginErr?RED:'#ddd'}`,borderRadius:9,fontSize:18,outline:'none',letterSpacing:6,textAlign:'center'}
+      className:'pin-input',
+      style:{borderColor:state.loginErr?RED:'#ddd'}
     });
     pinInp.value = state.loginPin;
     pinInp.addEventListener('input', e=>{state.loginPin=e.target.value;});
@@ -337,12 +349,10 @@ function renderLogin() {
     box.appendChild(pinWrap);
   }
   if(state.loginErr) box.appendChild(div({color:RED,fontSize:13,marginBottom:12,textAlign:'center'}, state.loginErr));
-  box.appendChild(btn({width:'100%',padding:14,background:NAVY,color:'white',border:'none',borderRadius:10,fontWeight:700,fontSize:15,cursor:'pointer'}, doLogin, 'Giriş Yap →'));
-  const inner = div({width:'100%',maxWidth:420,display:'flex',flexDirection:'column',alignItems:'center',gap:0,paddingBottom:20});
-  inner.appendChild(hero);
-  inner.appendChild(box);
-  inner.appendChild(div({color:'rgba(255,255,255,0.3)',fontSize:11,marginTop:16,textAlign:'center'},'Bizim Pazar Gıda A.Ş.'));
-  wrap.appendChild(inner);
+  box.appendChild(h('button',{className:'login-btn',onClick:doLogin},'Giriş Yap →'));
+    wrap.appendChild(hero);
+  wrap.appendChild(box);
+  wrap.appendChild(h('div',{className:'login-footer'},'Bizim Pazar Gıda A.Ş.'));
   return wrap;
 }
 
