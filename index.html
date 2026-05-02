@@ -14,22 +14,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  const cfg = {
-    apiKey: "AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",
-    authDomain: "bizim-pazar-denetim.firebaseapp.com",
-    projectId: "bizim-pazar-denetim",
-    storageBucket: "bizim-pazar-denetim.firebasestorage.app",
-    messagingSenderId: "1029710020793",
-    appId: "1:1029710020793:web:6533143105c1659a981b68"
-  };
-  const app = initializeApp(cfg);
-  window._db = getFirestore(app);
-  window._fc = { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp };
-  window._fbOk = true;
-  window.dispatchEvent(new Event('fb-ready'));
+  async function initFB() {
+    try {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+      const { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp }
+        = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+      const cfg = {
+        apiKey: "AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",
+        authDomain: "bizim-pazar-denetim.firebaseapp.com",
+        projectId: "bizim-pazar-denetim",
+        storageBucket: "bizim-pazar-denetim.firebasestorage.app",
+        messagingSenderId: "1029710020793",
+        appId: "1:1029710020793:web:6533143105c1659a981b68"
+      };
+      const app = initializeApp(cfg);
+      window._db = getFirestore(app);
+      window._fc = { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp };
+      window._fbOk = true;
+      window.dispatchEvent(new Event('fb-ready'));
+    } catch(e) {
+      console.warn('Firebase yüklenemedi:', e);
+      window._fbOk = false;
+      window.dispatchEvent(new Event('fb-ready'));
+    }
+  }
+  initFB();
 </script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -41,8 +50,23 @@ input,textarea,select,button{font-family:inherit}
 </head>
 <body>
 <div id="root" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1B3A6B">
-  <div style="color:white;text-align:center"><div style="font-size:40px;margin-bottom:12px">🔥</div><div style="font-size:16px;font-weight:600">Yükleniyor...</div></div>
+  <div style="color:white;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🏪</div>
+    <div style="font-size:20px;font-weight:800;letter-spacing:1px;margin-bottom:6px">BİZİM PAZAR</div>
+    <div style="font-size:13px;opacity:.7;margin-bottom:24px">Saha Denetim Sistemi</div>
+    <div id="load-msg" style="font-size:14px;opacity:.6">Uygulama yükleniyor...</div>
+  </div>
 </div>
+<script>
+  setTimeout(()=>{const el=document.getElementById('load-msg');if(el&&document.getElementById('root').children.length>0)el.textContent='Lütfen bekleyin...';},2000);
+  setTimeout(()=>{const el=document.getElementById('load-msg');if(el)el.textContent='Hazırlanıyor...';},4000);
+  setTimeout(() => {
+    if (!window._fbOk && window._fbOk !== false) {
+      window._fbOk = false;
+      window.dispatchEvent(new Event('fb-ready'));
+    }
+  }, 5000);
+</script>
 <script id="main-app" type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
 const NAVY='#1B3A6B', RED='#C0212B', GOLD='#E8A020', GREEN='#2E7D32';
