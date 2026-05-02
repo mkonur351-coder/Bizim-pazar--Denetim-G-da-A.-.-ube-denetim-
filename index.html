@@ -219,13 +219,19 @@ button:active{opacity:.8;transform:scale(.98)}
 <div id="app"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-const cfg={apiKey:"AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",authDomain:"bizim-pazar-denetim.firebaseapp.com",projectId:"bizim-pazar-denetim",storageBucket:"bizim-pazar-denetim.firebasestorage.app",messagingSenderId:"1029710020793",appId:"1:1029710020793:web:6533143105c1659a981b68"};
-try{const app=initializeApp(cfg);window._db=getFirestore(app);window._fc={collection,addDoc,getDocs,query,orderBy,where,serverTimestamp};window._fbOk=true;}
-catch(e){window._fbOk=false;}
-window.dispatchEvent(new Event('fb-ready'));
+async function startFirebase(){
+  try{
+    const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+    const {getFirestore,collection,addDoc,getDocs,query,orderBy,where,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+    const cfg={apiKey:"AIzaSyDcSX6S8MAngZ3YQBJaGRZUuz5VtYyPoog",authDomain:"bizim-pazar-denetim.firebaseapp.com",projectId:"bizim-pazar-denetim",storageBucket:"bizim-pazar-denetim.firebasestorage.app",messagingSenderId:"1029710020793",appId:"1:1029710020793:web:6533143105c1659a981b68"};
+    const app=initializeApp(cfg);
+    window._db=getFirestore(app);
+    window._fc={collection,addDoc,getDocs,query,orderBy,where,serverTimestamp};
+    window._fbOk=true;
+  }catch(e){window._fbOk=false;}
+  window.dispatchEvent(new Event('fb-ready'));
+}
+startFirebase();
 </script>
 
 <script>
@@ -858,7 +864,7 @@ function renderAdmin(){
     row.appendChild(el('span','sube-name',sube));
     row.appendChild(el('span','sube-cnt',`${sd.length} denetim`));
     if(avg!==null){const b=el('div','sube-badge',String(avg));b.style.background=sco(avg);row.appendChild(b);}
-    else row.appendChild(el('span','','-').className='sube-cnt');
+    else {const dash=el('span','sube-cnt','-');row.appendChild(dash);}
     spCard.appendChild(row);
   });
   body.appendChild(spCard);
@@ -972,14 +978,19 @@ function render(){
 function init(){
   try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';render();loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
   render();
-  setTimeout(()=>{const sp=document.getElementById('splash');if(sp){sp.classList.add('hide');setTimeout(()=>sp.remove(),400);}},400);
+  const sp=document.getElementById('splash');
+  if(sp){sp.classList.add('hide');setTimeout(()=>{if(sp.parentNode)sp.parentNode.removeChild(sp);},400);}
 }
 
-if(window._fbOk!==undefined) init();
-else window.addEventListener('fb-ready',init);
-setTimeout(()=>{if(!document.getElementById('app')?.children.length)init();},3000);
+// Start app immediately - don't wait for Firebase
+init();
+// Firebase connects in background
+window.addEventListener('fb-ready',()=>{
+  // Firebase ready - if admin panel open, refresh data
+  if(S.view==='admin') loadDenetimler();
+});
 
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
 </script>
 </body>
 </html>
