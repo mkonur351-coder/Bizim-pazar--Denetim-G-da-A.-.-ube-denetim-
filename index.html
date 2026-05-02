@@ -286,11 +286,34 @@ function compress(file){return new Promise(r=>{const rd=new FileReader();rd.onlo
 async function fbSave(data){if(!window._fbOk)return null;try{const{collection,addDoc,serverTimestamp}=window._fc;const ref=await addDoc(collection(window._db,'denetimler'),{...data,ts:serverTimestamp(),ca:new Date().toISOString()});return ref.id;}catch(e){return null;}}
 async function fbGet(sube=null){if(!window._fbOk)return[];try{const{collection,getDocs,query,orderBy,where}=window._fc;const q=sube?query(collection(window._db,'denetimler'),where('sube','==',sube),orderBy('ca','desc')):query(collection(window._db,'denetimler'),orderBy('ca','desc'));const snap=await getDocs(q);return snap.docs.map(d=>({id:d.id,...d.data()}));}catch(e){return[];}}
 
-function showStatus(msg,ms=2200){S.status=msg;if(S.statusTimer)clearTimeout(S.statusTimer);S.statusTimer=setTimeout(()=>{S.status='';render();},ms);render();}
-function saveFd(){try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}showStatus('☁️ Kaydedildi');}
-function upd(sec,f,v){S.fd[sec][f]=v;saveFd();}
+function showStatus(msg,ms=2200){
+  S.status=msg;
+  if(S.statusTimer)clearTimeout(S.statusTimer);
+  // Update status display without full re-render
+  const st=document.querySelector('.hdr-status');
+  if(st) st.textContent=msg;
+  S.statusTimer=setTimeout(()=>{S.status='';const st2=document.querySelector('.hdr-status');if(st2)st2.textContent='';},ms);
+}
+function saveFd(){
+  try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
+  showStatus('☁️ Kaydedildi');
+}
+let _saveTimer=null;
+function upd(sec,f,v){
+  S.fd[sec][f]=v;
+  // Debounce save - don't save on every keystroke
+  if(_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>{
+    try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
+    showStatus('☁️ Kaydedildi');
+  },800);
+}
 function updP(sec,p){S.fd[sec].photos=p;saveFd();}
-function goTo(ns){S.step=ns;saveFd();}
+function goTo(ns){
+  S.step=ns;
+  try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
+  render();
+}
 
 // ── DOM Helpers ────────────────────────────────────────────────────
 function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
@@ -778,15 +801,29 @@ function doLogin(){
   if(u&&u.pin===S.loginPin){
     S.user=u;S.loginErr='';
     localStorage.setItem('bp-user',JSON.stringify(u));
-    if(u.role==='admin'){S.view='admin';loadDenetimler();}
-    else{S.view='form';S.step=0;try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}};
-    render();
+    if(u.role==='admin'){
+      S.view='admin';
+      render(); // show admin shell immediately
+      loadDenetimler(); // then load data
+    } else {
+      S.view='form';S.step=0;
+      try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}
+      render();
+    }
   }else{S.loginErr='❌ PIN hatalı';S.loginPin='';render();}
 }
 function doLogout(){S.user=null;S.view='login';S.loginSel=null;S.loginPin='';S.loginErr='';localStorage.removeItem('bp-user');render();}
 
 // ── Admin ──────────────────────────────────────────────────────────
-async function loadDenetimler(){S.denetimler=await fbGet(S.adminFilt||null);render();}
+async function loadDenetimler(){
+  try{
+    S.denetimler=await fbGet(S.adminFilt||null);
+  }catch(e){
+    S.denetimler=[];
+    console.error('Firestore error:', e);
+  }
+  render();
+}
 
 function renderAdmin(){
   const list=S.denetimler,bugun=new Date().toISOString().split('T')[0];
@@ -794,7 +831,10 @@ function renderAdmin(){
   const filtered=S.adminFilt?list.filter(d=>d.sube===S.adminFilt):list;
   const w=el('div','admin-wrap');
   const hdr=el('div','admin-hdr');
-  const hl=el('div');hl.appendChild(el('div','','')).innerHTML='<div style="font-weight:800;font-size:15px;color:white">👑 ADMİN PANELİ</div><div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px">Bizim Pazar — Tüm Şubeler</div>';
+  const hl=el('div');
+  const ahl1=el('div');ahl1.style.cssText='font-weight:800;font-size:15px;color:white';ahl1.textContent='👑 ADMİN PANELİ';
+  const ahl2=el('div');ahl2.style.cssText='font-size:11px;color:rgba(255,255,255,.65);margin-top:2px';ahl2.textContent='Bizim Pazar — Tüm Şubeler';
+  hl.appendChild(ahl1);hl.appendChild(ahl2);
   const lb=el('button','hdr-btn','Çıkış');on(lb,'click',doLogout);
   hdr.appendChild(hl);hdr.appendChild(lb);w.appendChild(hdr);
   const body=el('div','admin-body');
@@ -930,7 +970,7 @@ function render(){
 }
 
 function init(){
-  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
+  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';render();loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
   render();
   setTimeout(()=>{const sp=document.getElementById('splash');if(sp){sp.classList.add('hide');setTimeout(()=>sp.remove(),400);}},400);
 }
