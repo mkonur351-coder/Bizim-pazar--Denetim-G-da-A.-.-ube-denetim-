@@ -992,7 +992,7 @@ function init(){
   try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';render();loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
   render();
   const sp=document.getElementById('splash');
-  if(sp){sp.classList.add('hide');setTimeout(()=>{if(sp.parentNode)sp.parentNode.removeChild(sp);},400);}
+  if(sp){sp.classList.add('hide');setTimeout(()=>{if(sp.parentNode)sp.parentNode.removeChild(sp);},200);}
 }
 
 // Start app immediately - don't wait for Firebase

@@ -1,20 +1,13 @@
-const CACHE = 'bp-denetim-v5';
-
-self.addEventListener('install', e => {
-  self.skipWaiting();
-});
-
+self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys().then(k => Promise.all(k.map(n => caches.delete(n))))
+    .then(() => self.clients.claim())
+    .then(() => {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(c => c.postMessage({type:'SW_UPDATED'}));
+      });
+    })
   );
 });
-
-self.addEventListener('fetch', e => {
-  // Network first - always get fresh content
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
-});
+self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
