@@ -20,7 +20,7 @@ button:active{opacity:.8;transform:scale(.98)}
 
 /* ── Splash ── */
 #splash{position:fixed;inset:0;background:#1B3A6B;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
-#splash.hide{opacity:0;pointer-events:none}
+#splash.hide{opacity:0;pointer-events:none;visibility:hidden}
 
 /* ── App Shell ── */
 .app{max-width:700px;margin:0 auto;min-height:100vh;background:#F0F2F5}
@@ -236,7 +236,7 @@ startFirebase();
 
 <script>
 const NAVY='#1B3A6B',RED='#C62828',GOLD='#F57F17',GREEN='#2E7D32';
-const LKEY='bp-v5';
+const LKEY='bp-v6';
 const BRANCHES=['Adliye Şubesi','Adana Yolu Şubesi','Cengiz Topel Şubesi','Andırın Caddesi Şubesi','Osmaniye Yolu Şubesi','Merkez Depo'];
 const STEPS=['Genel','Raf','SKT','Etiket','Depo','Personel','İade','Değerl.','Rapor'];
 const USERS=[
@@ -767,13 +767,19 @@ function buildRpt(fd,score){
 
 async function doSubmit(){
   if(S.submitting)return;S.submitting=true;render();
+  // Auto-cancel after 8 seconds
+  const timeout=setTimeout(()=>{
+    S.submitting=false;
+    showStatus('⚠️ Bağlantı zaman aşımı',3000);
+    render();
+  },8000);
   const fd=S.fd,score=calcScore(fd);
   const pl={sube:fd.genel.sube||S.user.sube||'',tarih:fd.genel.tarih,denetci:fd.genel.denetci,score,
     rafPlanogram:fd.raf.planogram,sktDurum:fd.skt.sktVar==='Evet'?'🔴 Sorunlu':fd.skt.sktVar==='Hayır'?'✅ Temiz':'—',
     etiketDurum:fd.etiket.dogruluk,depoDurum:fd.depo.genel,personelDurum:fd.personel.unifroma,
     iadeDurum:fd.iade.var==='Evet'?`⚠️ ${fd.iade.adet||'?'} ürün`:fd.iade.var==='Hayır'?'✅ Yok':'—',
     sktListe:fd.skt.liste||[],kritikBulgu:fd.degerl.kritik||'',yeniAksiyonlar:fd.degerl.yeni||'',notlar:fd.degerl.genel||'',userId:S.user.id};
-  const id=await fbSave(pl);S.submitting=false;
+  const id=await fbSave(pl);clearTimeout(timeout);S.submitting=false;
   if(id){S.submitted=true;showStatus('✅ Kaydedildi!',4000);}
   else showStatus('⚠️ Bağlantı hatası',3000);
 }
@@ -831,7 +837,14 @@ function doLogin(){
     }
   }else{S.loginErr='❌ PIN hatalı';S.loginPin='';render();}
 }
-function doLogout(){S.user=null;S.view='login';S.loginSel=null;S.loginPin='';S.loginErr='';localStorage.removeItem('bp-user');render();}
+function doLogout(){
+  try{
+    localStorage.removeItem('bp-user');
+    localStorage.removeItem(LKEY);
+  }catch(e){}
+  // Hard reload to ensure clean state
+  window.location.reload();
+}
 
 // ── Admin ──────────────────────────────────────────────────────────
 async function loadDenetimler(){
@@ -963,8 +976,9 @@ function renderForm(){
   });
   pg.appendChild(dots);w.appendChild(pg);
 
-  // Content
+  // Content - guard against invalid step
   const steps=[stepGenel,stepRaf,stepSKT,stepEtiket,stepDepo,stepPersonel,stepIade,stepDegerl,stepRapor];
+  if(typeof steps[S.step] !== 'function') S.step=0;
   const content=el('div','content');content.appendChild(steps[S.step]());w.appendChild(content);
 
   // Nav
@@ -989,6 +1003,8 @@ function render(){
 }
 
 function init(){
+  // Clear old cache keys
+  ['bp-v1','bp-v2','bp-v3','bp-v4','bp-v5'].forEach(k=>localStorage.removeItem(k));
   try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';render();loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=parseInt(p.step)||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
   render();
   const sp=document.getElementById('splash');
@@ -997,6 +1013,11 @@ function init(){
 
 // Start app immediately - don't wait for Firebase
 init();
+// Safety: always hide splash after 3 seconds
+setTimeout(()=>{
+  const sp=document.getElementById('splash');
+  if(sp){sp.classList.add('hide');setTimeout(()=>{if(sp.parentNode)sp.parentNode.removeChild(sp);},400);}
+},3000);
 // Firebase connects in background
 window.addEventListener('fb-ready',()=>{
   // Firebase ready - if admin panel open, refresh data
