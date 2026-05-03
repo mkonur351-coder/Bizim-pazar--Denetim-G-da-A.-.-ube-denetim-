@@ -325,7 +325,7 @@ function updP(sec,p){
   render(); // Photos need immediate visual update
 }
 function goTo(ns){
-  S.step=ns;
+  S.step=parseInt(ns)||0;
   try{localStorage.setItem(LKEY,JSON.stringify({fd:S.fd,step:S.step}));}catch(e){}
   render();
 }
@@ -826,7 +826,7 @@ function doLogin(){
       loadDenetimler(); // then load data
     } else {
       S.view='form';S.step=0;
-      try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}
+      try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=parseInt(p.step)||0;}catch(e){S.fd=mkFd(u);}
       render();
     }
   }else{S.loginErr='❌ PIN hatalı';S.loginPin='';render();}
@@ -989,31 +989,14 @@ function render(){
 }
 
 function init(){
-  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';render();loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=p.step||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
+  try{const s=localStorage.getItem('bp-user');if(s){const u=JSON.parse(s);S.user=u;if(u.role==='admin'){S.view='admin';render();loadDenetimler();}else{S.view='form';try{const p=JSON.parse(localStorage.getItem(LKEY)||'{}');S.fd=p.fd||mkFd(u);S.step=parseInt(p.step)||0;}catch(e){S.fd=mkFd(u);}}}}catch(e){}
   render();
   const sp=document.getElementById('splash');
   if(sp){sp.classList.add('hide');setTimeout(()=>{if(sp.parentNode)sp.parentNode.removeChild(sp);},200);}
 }
 
 // Start app immediately - don't wait for Firebase
-window.onerror = function(msg, src, line, col, err) {
-  document.getElementById('splash').innerHTML = 
-    '<div style="color:white;padding:30px;font-size:14px;text-align:center">' +
-    '<div style="font-size:40px;margin-bottom:16px">⚠️</div>' +
-    '<div style="font-weight:700;font-size:18px;margin-bottom:12px">Uygulama Hatası</div>' +
-    '<div style="opacity:.8;font-size:13px;word-break:break-all">' + msg + '</div>' +
-    '<div style="opacity:.5;font-size:11px;margin-top:8px">Satır: ' + line + '</div>' +
-    '</div>';
-  return false;
-};
-try { init(); } catch(e) {
-  document.getElementById('splash').innerHTML = 
-    '<div style="color:white;padding:30px;font-size:14px;text-align:center">' +
-    '<div style="font-size:40px;margin-bottom:16px">⚠️</div>' +
-    '<div style="font-weight:700;font-size:18px;margin-bottom:12px">Başlatma Hatası</div>' +
-    '<div style="opacity:.8;font-size:13px;word-break:break-all">' + e.message + '</div>' +
-    '</div>';
-}
+init();
 // Firebase connects in background
 window.addEventListener('fb-ready',()=>{
   // Firebase ready - if admin panel open, refresh data
